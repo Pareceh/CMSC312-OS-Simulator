@@ -9,21 +9,21 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 #include "Scheduler.h"
 #include "PCB.h"
 using namespace std;
 
 
 int main() {
-	PCB process[10];
-	int input,i;
-	int input2 = 1;
-	ifstream in;
-	string stringIn;
-	string   line;
-	static int count;
+	vector<PCB> processes;
+	int input,i, saveMin, saveMax;
+	int input2 =1;
 	int checker = 1;
-
+	static int count;
+	string fileName = "template1";
+	string stringIn, saveType, line;
+	ifstream in;
 
 	cout << "Welcome to OS Simulator\n_______________________\n\n Press [1] to continue. Press [0] to exit.\n\n";
 	cin >> input;
@@ -33,60 +33,69 @@ int main() {
 		cin >> input;
 
 		//input == 2, so we would like to load a job/process
-		if(input ==2){
-			cout << "Create a process [1] or load a process [2]?\n\n";
+		if(input == 2){
+			cout << "Create a process [1] or load a process [2]?\n";
 			cin >> input;
 
-			if(input ==1){
+			if(input == 1){
 				while(input2 == 1){
 					cout << "Enter 1 for CALCULATE, enter 2 for I/O or enter 3 for FORK\n";
 					cin >> input;
 					if(input == 1)
-						process[count].type = "CALCULATE";
+						saveType = "CALCULATE";
 					else if(input == 2)
-						process[count].type = "I/O";
+						saveType = "I/O";
 					else
-						process[count].type = "FORK";
+						saveType = "FORK";
+
 					cout << "Enter min cycles:\n";
 					cin >> input;
-					process[count].minCycle = input;
+					saveMin = input;
 					cout << "\nEnter max cycles:\n";
 					cin >> input;
-					process[count].maxCycle = input;
-					process[count].pid = count +1;
+					saveMax = input;
+
+					PCB process(saveType,(count +1), saveMin, saveMax);
+					processes.push_back(process);
+
 					count++;
 					cout << "Create another process? [1] Yes ~~ [2] No\n";
 					cin >> input2;
 				}
 			}
 			else if(input == 2){
-				in.open("src/template1.txt");
+				cout << "Enter template name:\n";
+				cin >> fileName;
+				fileName = "templates/" + fileName + ".txt";
+				in.open(fileName);
 				if (!in) {
-				    cerr << "Unable to open file template1.txt";
-				    exit(1);   // call system to stop
+					while(!in){
+						cerr << "Unable to open file. Please check spelling. \n";
+						cout << "Enter template name:\n";
+						cin >> fileName;
+						fileName = "templates/" + fileName + ".txt";
+						in.open(fileName);
+					}
 				}
+
 				while(!in.eof()){
-
-					//getline(in, line,',');
-					in >> line;
-					cout << line << '\n';
-					if(checker == 1){
-						process[count].type = line;
-						checker=2;
-					}
-					else if(checker == 2){
-						process[count].minCycle = stoi(line);
-						checker=3;
-					}
-					else{
-						process[count].maxCycle = stoi(line);
-						checker = 1;
-					}
-
-					process[count].pid = count + 1;
-					if(checker == 1)
-						count++;
-
+						in >> line;
+						if(checker == 1){
+							saveType = line;
+							checker=2;
+						}
+						else if(checker == 2){
+							saveMin = stoi(line);
+							checker=3;
+						}
+						else{
+							saveMax = stoi(line);
+							checker = 1;
+							PCB process(saveType,(count +1), saveMin, saveMax);
+							processes.push_back(process);
+						}
+						if(checker == 1)
+							count++;
 				}
 				cout << "COUNT IS:" << count << "\n";
 				in.close();
@@ -98,12 +107,12 @@ int main() {
 		//input == 3, so we would like to know the current statistics of running programs
 		if(input == 3){
 			cout << "Process ID ___ Operation ___ Min Cycles ____  Max Cycles____  Actual Cycles\n";
-			for(i=0; i < count; i ++){
-						cout << process[i].getID() << " ___________ "
-						<< process[i].getType() << " ___________ "
-						<< process[i].getMinCycle() << " ___________ "
-						<< process[i].getMaxCycle() << " ___________ "
-						<< process[i].getActualCycle() << "\n";
+			for(i=0; i < processes.size(); i++){
+						cout << processes[i].getID() << " ___________ "
+						<< processes[i].getType() << " ___________ "
+						<< processes[i].getMinCycle() << " ___________ "
+						<< processes[i].getMaxCycle() << " ___________ "
+						<< processes[i].getActualCycle() << "\n";
 			}
 
 

@@ -28,7 +28,7 @@ public:
 		actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
 	}
 
-	PCB(char function[],int id,int min, int max){
+	PCB(string function,int id,int min, int max){
 		type = function;
 	     pid = id;
 	     minCycle = min;
