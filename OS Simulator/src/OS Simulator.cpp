@@ -20,7 +20,7 @@ int main() {
 	int input,i, saveMin, saveMax;
 	int input2 =1;
 	int checker = 1;
-	static int count;
+	static int count, cycle;
 	string fileName = "template1";
 	string stringIn, saveType, line;
 	ifstream in;
@@ -94,8 +94,10 @@ int main() {
 							PCB process(saveType,(count +1), saveMin, saveMax);
 							processes.push_back(process);
 						}
-						if(checker == 1)
+						if(checker == 1){
 							count++;
+							processes = scheduler(processes);
+						}
 				}
 				cout << "COUNT IS:" << count << "\n";
 				in.close();
@@ -120,7 +122,6 @@ int main() {
 
 		//input == 4, so we would like to display the help menu
 		if(input == 4){
-
 		}
 		//input == 0, so we would like to exit the program
 		if(input == 0)
@@ -128,8 +129,7 @@ int main() {
 
 		cout << "Press [1] to continue. Press[0] to exit.\n\n";
 		cin >> input;
+		cycle++;
 	}
 	return 0;
 }
-
-
