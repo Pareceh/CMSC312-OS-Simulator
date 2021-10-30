@@ -14,13 +14,11 @@
 #include <stdexcept>
 #include <vector>
 using namespace std;
-#include "PCB.h"
+#include "Process.h"
 
 
-bool comparator(const PCB& lhs, const PCB& rhs) {
+bool comparator(const Process& lhs, const Process& rhs) {
    return lhs.actualCycle < rhs.actualCycle;
-
-
 }
 
 /*if a process is currently running in it's critical section, then we must send the process to the waiting queue
@@ -31,11 +29,12 @@ we are implementing a shortest time remaining first queue
 */
 
 
-PCB sendtoQueue(vector<PCB> processes){
+Process sendtoQueue(vector<Process> processes){
+
 
 }
 
-vector<PCB> scheduler(vector<PCB> processes){
+vector<Process> scheduler(vector<Process> processes){
 	sort(processes.begin(), processes.end(), &comparator);
 	sendtoQueue(processes);
 	return processes;
@@ -43,8 +42,8 @@ vector<PCB> scheduler(vector<PCB> processes){
 
 
 
-vector<PCB> readyQueue(PCB process){
-	static vector<PCB>readyQueue;
+vector<Process> readyQueue(Process process){
+	static vector<Process>readyQueue;
 	readyQueue.push_back(process);
 	return readyQueue;
 	/*queue of processes waiting to run
@@ -53,9 +52,9 @@ vector<PCB> readyQueue(PCB process){
 
 }
 
-PCB dispatcher(PCB process){
-	static vector<PCB> dispatcher;
-	vector<PCB> temp;
+Process dispatcher(Process process){
+	static vector<Process> dispatcher;
+	vector<Process> temp;
 	if(dispatcher.size() == 0){ //the dispatcher is empty, add the process
 		dispatcher.push_back(process);
 							cout << dispatcher[0].getID() << " ___________ "
