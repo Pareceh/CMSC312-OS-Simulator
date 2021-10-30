@@ -16,9 +16,11 @@
 #include "Scheduler.h"
 using namespace std;
 
+vector<Process> cycle(vector<Process> jobQueue);
+
 
 int main() {
-	vector<Process> processes;
+	vector<Process> jobQueue, temp;
 	int input,i, saveMin, saveMax;
 	int savedCount = 0;
 	int checker = 1;
@@ -70,12 +72,13 @@ int main() {
 								saveMax = stoi(line);
 								checker = 1;
 								Process process(saveType,(count +1), saveMin, saveMax);
-								processes.push_back(process);
+								jobQueue.push_back(process);
 							}
 							if(checker == 1){
 								count++;
-								processes = scheduler(processes); //whenever a process is done we
+								jobQueue = cycle(jobQueue);
 							}
+
 					}
 					in.close();
 				}
@@ -101,32 +104,40 @@ int main() {
 					<< left
 					<< setw(12)
 					<< "Actual Cycles"
+					<< left
+					<< setw(12)
+					<< "Current Cycles"
 					<< endl;
-			for(i=0; i < processes.size(); i++){
+			for(i=0; i < jobQueue.size(); i++){
 						cout
 								<< left
 								<<setw(12)
-								<< processes[i].getID()
+								<< jobQueue[i].getID()
 								<< left
 								<< setw(12)
-								<< processes[i].getType()
+								<< jobQueue[i].getType()
 								<< left
 								<< setw(12)
-								<< processes[i].getMinCycle()
+								<< jobQueue[i].getMinCycle()
 								<< left
 								<< setw(12)
-								<< processes[i].getMaxCycle()
+								<< jobQueue[i].getMaxCycle()
 								<< left
 								<< setw(12)
-								<< processes[i].getActualCycle()
+								<< jobQueue[i].getActualCycle()
+								<< left
+								<< setw(12)
+								<< jobQueue[i].currentCycle
 								<< endl;
 			}
 
 
+			jobQueue = cycle(jobQueue);
 		}
 
 		//input == 4, so we would like to display the help menu
 		else if(input == 4){
+			jobQueue = cycle(jobQueue);
 
 		}
 		//input == 0, so we would like to exit the program
@@ -137,6 +148,24 @@ int main() {
 
 		cout << "Press [1] to continue. Press[0] to exit.\n\n";
 		cin >> input;
+
 	}
 	return 0;
+}
+
+
+vector<Process> cycle(vector<Process> jobQueue){ //a cycle is completed whenever the CPU finishes loading a process OR a menu is displayed
+	vector<Process> temp;
+	jobQueue = scheduler(jobQueue);
+								temp = dispatcher(jobQueue[0]);
+									if(temp.size() ==0){
+										jobQueue.erase(jobQueue.begin());
+										dispatcher(jobQueue[0]);
+									}
+									else{
+										jobQueue[0] = temp[0];
+									}
+
+								jobQueue = scheduler(jobQueue);
+								return jobQueue;
 }

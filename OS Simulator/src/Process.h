@@ -57,6 +57,11 @@ public:
 	int getActualCycle(){
 		return actualCycle;
 	}
+
+	int getCurrentCycle(){
+		return currentCycle;
+	}
+
 };
 
 
