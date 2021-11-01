@@ -16,18 +16,17 @@
 #include "Scheduler.h"
 using namespace std;
 
-vector<Process> cycle(vector<Process> jobQueue);
-bool randomAssign(int number);
-bool checkforCrit(vector<Process> processes);
-
+//vector<PCB> cycle(vector<PCB> pcb);
 
 int main() {
 	vector<Process> jobQueue, temp;
-	int input,i, saveMin, saveMax;
+	vector<PCB> control;
+	int input, saveMin, saveMax;
+	unsigned int i;
 	int savedCount = 0;
 	int checker = 1;
-	static int count;
-	string fileName = "template1";
+	static int count, tester;
+	string fileName = "template1"; //default to template1 just in case
 	string stringIn, saveType, line;
 	ifstream in;
 
@@ -57,6 +56,7 @@ int main() {
 
 				cout << "How many processes do you wish to make?" << endl;
 				cin >> input;
+				jobQueue.clear();
 
 				while(count < (input + savedCount)){
 					in.open(fileName);
@@ -73,82 +73,44 @@ int main() {
 							else{
 								saveMax = stoi(line);
 								checker = 1;
-								Process process(saveType,(count +1), saveMin, saveMax, randomAssign(input));
+								Process process(saveType, saveMin, saveMax, false);
 								jobQueue.push_back(process);
 							}
 							if(checker == 1){
 								count++;
-								jobQueue = cycle(jobQueue);
 							}
 
 					}
-					jobQueue[jobQueue.size()].isCritical = checkforCrit(jobQueue);
 					in.close();
 				}
+				jobQueue[rand() % jobQueue.size()].isCritical = true;
+				tester++;
+				control.push_back(PCB(jobQueue, tester));
+			//	jobQueue = cycle(jobQueue);
 				savedCount = count;
 			}
 
 
 		//input == 3, so we would like to know the current statistics of running programs
 		else if(input == 3){
-			cout
-					<< left
-					<<setw(12)
-					<<"Process ID"
-					<< left
-					<< setw(12)
-					<< "Operation"
-					<< left
-					<< setw(12)
-					<< "Min Cycles"
-					<< left
-					<< setw(12)
-					<< "Max Cycles"
-					<< left
-					<< setw(12)
-					<< "Actual Cycles"
-					<< left
-					<< setw(12)
-					<< "Current Cycles"
-					<< left
-					<< setw(12)
-					<< "IsCritical?"
-					<< endl;
-			for(i=0; i < jobQueue.size(); i++){
-						cout
-								<< left
-								<<setw(12)
-								<< jobQueue[i].getID()
-								<< left
-								<< setw(12)
-								<< jobQueue[i].getType()
-								<< left
-								<< setw(12)
-								<< jobQueue[i].getMinCycle()
-								<< left
-								<< setw(12)
-								<< jobQueue[i].getMaxCycle()
-								<< left
-								<< setw(12)
-								<< jobQueue[i].getActualCycle()
-								<< left
-								<< setw(12)
-								<< jobQueue[i].currentCycle
-								<< left
-								<< setw(12)
-								<< jobQueue[i].isCritical
-								<< endl;
-			}
-
-
-			jobQueue = cycle(jobQueue);
+			print(jobQueue);
+			//jobQueue = cycle(jobQueue);
 		}
 
 		//input == 4, so we would like to display the help menu
 		else if(input == 4){
-			jobQueue = cycle(jobQueue);
+			control = scheduler(control);
+			for(i=0; i < control.size(); i++){
+				cout  << "JOB NUMBER: " << control[i].pid << endl;
+				cout << "PRIORITY:" << control[i].priority << endl;
+				cout << "STATUS:" << control[i].status << endl;
+				print(control[i].test[0]);
+			}
+
+			//control = cycle(control);
 
 		}
+
 		//input == 0, so we would like to exit the program
 		else if(input == 0)
 			break;
@@ -163,37 +125,28 @@ int main() {
 }
 
 
-vector<Process> cycle(vector<Process> jobQueue){ //a cycle is completed whenever the CPU finishes loading a process OR a menu is displayed
+//a cycle is completed whenever the CPU finishes loading a process OR a menu is displayed
+/*vector<PCB> cycle(vector<PCB> pcb){
+	vector<vector<Process>> level1;
+	vector<Process> level2;
+	Process level3;
+
 	vector<Process> temp;
-	jobQueue = scheduler(jobQueue);
-								temp = dispatcher(jobQueue[0]);
-									if(temp.size() ==0){
-										jobQueue.erase(jobQueue.begin());
-										dispatcher(jobQueue[0]);
+	pcb = scheduler(pcb);
+
+
+
+								level2 = dispatcher(pcb, pcb[0].test);
+									if(level2.size() == 0){
+										pcb[0].test.erase(pcb[0].test.begin());
+										dispatcher(pcb, pcb[0].test);
 									}
 									else{
-										jobQueue[0] = temp[0];
+										pcb[0].test[0] = temp[0];
 									}
 
-								jobQueue = scheduler(jobQueue);
-								return jobQueue;
+								pcb = scheduler(pcb);
+								return pcb;
 }
+*/
 
-
-bool randomAssign(int number){
-	bool value;
-	 if((rand() % number)/3 == 0)
-		 return value = true;
-	 else
-		 return value = false;
-}
-
-bool checkforCrit(vector<Process> processes){
-	for(int i = 0; i < processes.size();i++){
-		if(processes[i].isCritical)
-			return false;
-		else
-			return true;
-	}
-
-}
