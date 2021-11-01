@@ -18,6 +18,7 @@ using namespace std;
 class Process{
 public:
 	int pid,minCycle, maxCycle, actualCycle, currentCycle;
+	bool isCritical;
 	string type;
 
 	Process(){
@@ -27,15 +28,17 @@ public:
 		maxCycle = 30;
 		actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
 		currentCycle = actualCycle;
+		isCritical = false;
 	}
 
-	Process(string function,int id,int min, int max){
+	Process(string function,int id,int min, int max, bool crit){
 		type = function;
 	     pid = id;
 	     minCycle = min;
 	     maxCycle = max;
 	     actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
 	     currentCycle = actualCycle;
+	     isCritical = crit;
 	   }
 
 	string getType(){

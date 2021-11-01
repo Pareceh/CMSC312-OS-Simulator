@@ -17,6 +17,8 @@
 using namespace std;
 
 vector<Process> cycle(vector<Process> jobQueue);
+bool randomAssign(int number);
+bool checkforCrit(vector<Process> processes);
 
 
 int main() {
@@ -71,7 +73,7 @@ int main() {
 							else{
 								saveMax = stoi(line);
 								checker = 1;
-								Process process(saveType,(count +1), saveMin, saveMax);
+								Process process(saveType,(count +1), saveMin, saveMax, randomAssign(input));
 								jobQueue.push_back(process);
 							}
 							if(checker == 1){
@@ -80,6 +82,7 @@ int main() {
 							}
 
 					}
+					jobQueue[jobQueue.size()].isCritical = checkforCrit(jobQueue);
 					in.close();
 				}
 				savedCount = count;
@@ -107,6 +110,9 @@ int main() {
 					<< left
 					<< setw(12)
 					<< "Current Cycles"
+					<< left
+					<< setw(12)
+					<< "IsCritical?"
 					<< endl;
 			for(i=0; i < jobQueue.size(); i++){
 						cout
@@ -128,6 +134,9 @@ int main() {
 								<< left
 								<< setw(12)
 								<< jobQueue[i].currentCycle
+								<< left
+								<< setw(12)
+								<< jobQueue[i].isCritical
 								<< endl;
 			}
 
@@ -168,4 +177,23 @@ vector<Process> cycle(vector<Process> jobQueue){ //a cycle is completed whenever
 
 								jobQueue = scheduler(jobQueue);
 								return jobQueue;
+}
+
+
+bool randomAssign(int number){
+	bool value;
+	 if((rand() % number)/3 == 0)
+		 return value = true;
+	 else
+		 return value = false;
+}
+
+bool checkforCrit(vector<Process> processes){
+	for(int i = 0; i < processes.size();i++){
+		if(processes[i].isCritical)
+			return false;
+		else
+			return true;
+	}
+
 }
