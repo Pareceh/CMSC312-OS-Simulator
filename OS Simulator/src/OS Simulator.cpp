@@ -16,7 +16,7 @@
 #include "Scheduler.h"
 using namespace std;
 
-//vector<PCB> cycle(vector<PCB> pcb);
+vector<PCB> cycle(vector<PCB> pcb);
 
 int main() {
 	vector<Process> jobQueue, temp;
@@ -86,7 +86,7 @@ int main() {
 				jobQueue[rand() % jobQueue.size()].isCritical = true;
 				tester++;
 				control.push_back(PCB(jobQueue, tester));
-			//	jobQueue = cycle(jobQueue);
+				control = cycle(control);
 				savedCount = count;
 			}
 
@@ -94,12 +94,15 @@ int main() {
 		//input == 3, so we would like to know the current statistics of running programs
 		else if(input == 3){
 			print(jobQueue);
-			//jobQueue = cycle(jobQueue);
+			control = cycle(control);
 		}
 
 		//input == 4, so we would like to display the help menu
 		else if(input == 4){
-			control = scheduler(control);
+			//control = scheduler(control);
+			if(control.size() == 0){
+				cerr << "No processes running.";
+			}
 			for(i=0; i < control.size(); i++){
 				cout  << "JOB NUMBER: " << control[i].pid << endl;
 				cout << "PRIORITY:" << control[i].priority << endl;
@@ -107,7 +110,7 @@ int main() {
 				print(control[i].test[0]);
 			}
 
-			//control = cycle(control);
+			control = cycle(control);
 
 		}
 
@@ -125,28 +128,34 @@ int main() {
 }
 
 
-//a cycle is completed whenever the CPU finishes loading a process OR a menu is displayed
-/*vector<PCB> cycle(vector<PCB> pcb){
-	vector<vector<Process>> level1;
-	vector<Process> level2;
-	Process level3;
+vector<PCB> cycle(vector<PCB> pcb){
+		vector<vector<Process>> level1 = pcb[0].test;
+		vector<Process> level2 = level1[0];
+		Process level3 =level2[0];
+		pcb = scheduler(pcb);
 
-	vector<Process> temp;
-	pcb = scheduler(pcb);
+		level3 = dispatcher(pcb, level2);
+		if(level3.currentCycle == 0){
+			level2.erase(level2.begin());
+			cout << level2.size() << " " << level1.size() << " " << pcb.size() << " " << endl;
+			if(level2.size() == 0){
+				pcb.erase(pcb.begin());
+				level1 = pcb[0].test;
+				level2 = level1[0];
+				level3 = level2[0];
+				if(pcb.size() == 0){
+					cerr << "No Processes Running";
+				}
+			}
+			level1[0] = level2;
+			pcb[0].test = level1;
+			dispatcher(pcb,level2);
+			}
 
 
 
-								level2 = dispatcher(pcb, pcb[0].test);
-									if(level2.size() == 0){
-										pcb[0].test.erase(pcb[0].test.begin());
-										dispatcher(pcb, pcb[0].test);
-									}
-									else{
-										pcb[0].test[0] = temp[0];
-									}
-
-								pcb = scheduler(pcb);
-								return pcb;
+		return pcb;
 }
-*/
+
+
 

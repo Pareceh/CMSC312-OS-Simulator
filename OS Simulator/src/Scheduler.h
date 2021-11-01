@@ -35,13 +35,18 @@ we are implementing a shortest time remaining first queue
 //the scheduler sorts by least time remaining first
 vector<PCB> scheduler(vector<PCB> pcb){
 	sort(pcb.begin(), pcb.end(), &comparator);
-
-	//send the job with the lowest priority value to the dispatcher
-	pcb[0].status = "Running";
-	for(unsigned int i = 1; i < pcb.size(); i++)
-		pcb[i].status = "Ready";
-
 	vector<Process> abc = pcb[0].test[0];
+
+	if(abc[0].type == "I/O"){
+			pcb[0].status = "Waiting";
+	}
+	else{
+		pcb[0].status = "Running";
+	}
+	for(unsigned int i = 1; i < pcb.size(); i++)
+	pcb[i].status = "Ready";
+	//send the job with the lowest priority value to the dispatcher
+
 	abc[0] = dispatcher(pcb, pcb[0].test[0]);
 	pcb[0].test[0] = abc;
 
