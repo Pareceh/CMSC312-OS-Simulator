@@ -35,12 +35,12 @@ public:
 
 	Process(string function,int min, int max, bool crit){
 		type = function;
-	     minCycle = min;
-	     maxCycle = max;
-	     actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
-	     currentCycle = actualCycle;
-	     isCritical = crit;
-	   }
+		minCycle = min;
+		maxCycle = max;
+		actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
+		currentCycle = actualCycle;
+		isCritical = crit;
+	}
 
 };
 
@@ -91,49 +91,48 @@ vector<vector<Process>> createQueue(vector<PCB> pcb){
 void print(vector<Process> jobQueue){
 	unsigned int i;
 	cout
-						<< left
-						<< setw(12)
-						<< "Operation"
-						<< left
-						<< setw(12)
-						<< "Min Cycles"
-						<< left
-						<< setw(12)
-						<< "Max Cycles"
-						<< left
-						<< setw(12)
-						<< "Actual Cycles"
-						<< left
-						<< setw(12)
-						<< "Current Cycles"
-						<< left
-						<< setw(12)
-						<< "IsCritical?"
-						<< endl;
-				for(i=0; i < jobQueue.size(); i++){
-							cout
-
-									<< left
-									<< setw(12)
-									<< jobQueue[i].type
-									<< left
-									<< setw(12)
-									<< jobQueue[i].minCycle
-									<< left
-									<< setw(12)
-									<< jobQueue[i].maxCycle
-									<< left
-									<< setw(12)
-									<< jobQueue[i].actualCycle
-									<< left
-									<< setw(12)
-									<< jobQueue[i].currentCycle
-									<< left
-									<< setw(12)
-									<< jobQueue[i].isCritical
-									<< endl;
-				}
-				cout << endl;
+	<< left
+	<< setw(12)
+	<< "Operation"
+	<< left
+	<< setw(12)
+	<< "Min Cycles"
+	<< left
+	<< setw(12)
+	<< "Max Cycles"
+	<< left
+	<< setw(12)
+	<< "Actual Cycles"
+	<< left
+	<< setw(12)
+	<< "Current Cycles"
+	<< left
+	<< setw(12)
+	<< "IsCritical?"
+	<< endl;
+	for(i=0; i < jobQueue.size(); i++){
+		cout
+		<< left
+		<< setw(12)
+		<< jobQueue[i].type
+		<< left
+		<< setw(12)
+		<< jobQueue[i].minCycle
+		<< left
+		<< setw(12)
+		<< jobQueue[i].maxCycle
+		<< left
+		<< setw(12)
+		<< jobQueue[i].actualCycle
+		<< left
+		<< setw(12)
+		<< jobQueue[i].currentCycle
+		<< left
+		<< setw(12)
+		<< jobQueue[i].isCritical
+		<< endl;
+	}
+	cout << endl;
 }
 
 

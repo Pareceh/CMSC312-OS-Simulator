@@ -40,73 +40,73 @@ int main() {
 
 		//input == 2, so we would like to load a job/process
 		if(input == 2){
-				cout << "Enter template name:" << endl;
-				cin >> fileName;
-				fileName = "templates/" + fileName + ".txt";
+			cout << "Enter template name:" << endl;
+			cin >> fileName;
+			fileName = "templates/" + fileName + ".txt";
+			in.open(fileName);
+			if (!in) {
+				while(!in){
+					cerr << "Unable to open file. Please check spelling." << endl;
+					cout << "Enter template name:" << endl;
+					cin >> fileName;
+					fileName = "templates/" + fileName + ".txt";
+					in.open(fileName);
+				}
+			}
+			in.close();
+
+			cout << "How many processes do you wish to make?" << endl;
+			cin >> input;
+			jobQueue.clear();
+
+			//read the input of the file
+			while(count < (input + savedCount)){
 				in.open(fileName);
-				if (!in) {
-					while(!in){
-						cerr << "Unable to open file. Please check spelling." << endl;
-						cout << "Enter template name:" << endl;
-						cin >> fileName;
-						fileName = "templates/" + fileName + ".txt";
-						in.open(fileName);
+				while(!in.eof() && count < (input + savedCount)){
+					in >> line;
+					if(checker == 1){
+						saveType = line;
+						checker=2;
 					}
+					else if(checker == 2){
+						saveMin = stoi(line);
+						checker=3;
+					}
+					else{
+						saveMax = stoi(line);
+						checker = 1;
+						Process process(saveType, saveMin, saveMax, false);
+						jobQueue.push_back(process);
+					}
+					if(checker == 1){
+						count++;
+					}
+
 				}
 				in.close();
-
-				cout << "How many processes do you wish to make?" << endl;
-				cin >> input;
-				jobQueue.clear();
-
-				//read the input of the file
-				while(count < (input + savedCount)){
-					in.open(fileName);
-					while(!in.eof() && count < (input + savedCount)){
-							in >> line;
-							if(checker == 1){
-								saveType = line;
-								checker=2;
-							}
-							else if(checker == 2){
-								saveMin = stoi(line);
-								checker=3;
-							}
-							else{
-								saveMax = stoi(line);
-								checker = 1;
-								Process process(saveType, saveMin, saveMax, false);
-								jobQueue.push_back(process);
-							}
-							if(checker == 1){
-								count++;
-							}
-
-					}
-					in.close();
-				}
-				//randomly assign one of the processes to be critical
-				jobQueue[rand() % jobQueue.size()].isCritical = true;
-				tester++;
-				control.push_back(PCB(jobQueue, tester));
-				control = cycle(control); //do one cycle
-				savedCount = count;
 			}
+			//randomly assign one of the processes to be critical
+			jobQueue[rand() % jobQueue.size()].isCritical = true;
+			tester++;
+			control.push_back(PCB(jobQueue, tester));
+			control = cycle(control); //do one cycle
+			savedCount = count;
+		}
 
 
 		//input == 3, so we would like to know the current statistics of running programs
 		else if(input == 3){
 			if(control.size() == 0){
 				cerr << "No processes running.";
-						}
-						for(i=0; i < control.size(); i++){
-							cout  << "JOB NUMBER: " << control[i].pid << endl;
-							cout << "PRIORITY:" << control[i].priority << endl;
-							cout << "STATUS:" << control[i].status << endl;
-							print(control[i].test[0]);
-						}
+			}
+			for(i=0; i < control.size(); i++){
+				cout  << "JOB NUMBER: " << control[i].pid << endl;
+				cout << "PRIORITY:" << control[i].priority << endl;
+				cout << "STATUS:" << control[i].status << endl;
+				print(control[i].test[0]);
+			}
 
-						control = cycle(control);
+			control = cycle(control);
 		}
 
 		//input == 4, so we would like to display the help menu
@@ -140,7 +140,7 @@ int main() {
 		else if(input == 0)
 			break;
 		else
-				cerr <<"Invalid input\n";
+			cerr <<"Invalid input\n";
 
 		cout << "Press [1] to continue. Press[0] to exit.\n\n";
 		cin >> input;
@@ -150,33 +150,33 @@ int main() {
 }
 
 
-//function to perform one
+//function to perform one cycle
 vector<PCB> cycle(vector<PCB> pcb){
-		vector<vector<Process>> level1 = pcb[0].test;
-		vector<Process> level2 = level1[0];
-		Process level3 =level2[0];
-		pcb = scheduler(pcb);
+	vector<vector<Process>> level1 = pcb[0].test;
+	vector<Process> level2 = level1[0];
+	Process level3 =level2[0];
+	pcb = scheduler(pcb);
 
-		level3 = dispatcher(pcb, level2);
-		if(level3.currentCycle == 0){
-			level2.erase(level2.begin());
-			if(level2.size() == 0){
-				pcb.erase(pcb.begin());
-				level1 = pcb[0].test;
-				level2 = level1[0];
-				level3 = level2[0];
-				if(pcb.size() == 0){
-					cerr << "No Processes Running";
-				}
+	level3 = CPU(pcb, level2);
+	if(level3.currentCycle == 0){
+		level2.erase(level2.begin());
+		if(level2.size() == 0){
+			pcb.erase(pcb.begin());
+			level1 = pcb[0].test;
+			level2 = level1[0];
+			level3 = level2[0];
+			if(pcb.size() == 0){
+				cerr << "No Processes Running";
 			}
-			level1[0] = level2;
-			pcb[0].test = level1;
-			dispatcher(pcb,level2);
-			}
+		}
+		level1[0] = level2;
+		pcb[0].test = level1;
+		CPU(pcb,level2);
+	}
 
 
 
-		return pcb;
+	return pcb;
 }
 
 

@@ -18,10 +18,11 @@ using namespace std;
 
 #include "Process.h"
 
-Process dispatcher(vector<PCB> pcb, vector<Process> job);
+Process CPU(vector<PCB> pcb, vector<Process> job);
+Process dispatcher(vector<PCB> * pcb);
 
 bool comparator(const PCB& lhs, const PCB& rhs) {
-   return lhs.priority < rhs.priority;
+	return lhs.priority < rhs.priority;
 }
 
 /*if a process is currently running in it's critical section, then we must send the process to the waiting queue
@@ -29,7 +30,9 @@ if there is no process in it's critical section, then we send the process to the
 we will send 1 process from the top of the ready queue to the dispatcher at time
 the dispatcher can only hold 1 process at a time
 we are implementing a shortest time remaining first queue
-*/
+
+scheduler -> queue -> dispatcher -> cpu
+ */
 
 
 //the scheduler sorts by least time remaining first
@@ -38,16 +41,15 @@ vector<PCB> scheduler(vector<PCB> pcb){
 	vector<Process> abc = pcb[0].test[0];
 
 	if(abc[0].type == "I/O"){
-			pcb[0].status = "Waiting";
+		pcb[0].status = "Waiting";
 	}
 	else{
-		pcb[0].status = "Running";
 	}
 	for(unsigned int i = 1; i < pcb.size(); i++)
-	pcb[i].status = "Ready";
+		pcb[i].status = "Ready";
 	//send the job with the lowest priority value to the dispatcher
 
-	abc[0] = dispatcher(pcb, pcb[0].test[0]);
+	abc[0] = dispatcher(&pcb);
 	pcb[0].priority--;
 
 	//aging so that the older processes may have an opportunity to run
@@ -60,65 +62,54 @@ vector<PCB> scheduler(vector<PCB> pcb){
 	return pcb;
 }
 
-
-
-vector<Process> readyQueue(vector<PCB> pcb){
-	vector<vector<Process>> processes;
-	vector<Process> process;
-	unsigned int i;
-	for(i = 0; i < pcb.size(); i++){
-		processes = pcb[i].test;
-	}
-	for(i = 0; i < processes.size();i++){
-		process = processes[i];
-	}
-	print(process);
-	static vector<Process>readyQueue;
-	//readyQueue.push_back(process);
-	return readyQueue;
-	/*queue of processes ready to run
-	 * when a process is no longer in the dispatcher we send the top of the readyQueue to the dispatcher
-	 */
+waitingQueue(vector<PCB> pcb){
 
 }
 
-//the dispatcher only holds the currently running process
-Process dispatcher(vector<PCB> pcb, vector<Process> job){
-	static vector<Process> dispatcher;
-	vector<Process> test;
-	vector<Process> temp;
-	Process zz;
-	zz = job[0];
 
-	if(dispatcher.size() == 0){ //the dispatcher is empty, add the process
-		dispatcher.push_back(zz);
+vector<Process> readyQueue(vector<PCB> pcb){
+
+}
+
+Process dispatcher(vector<PCB> * pcb){
+	vector<Process> job = pcb->at(0).test[0];
+	pcb->at(0).status = "Running";
+	return CPU(*pcb,job);
+}
+
+/* hold the currently running process
+ * we want to save it when we try to add a new process
+ * CPU should always have a process
+ */
+Process CPU(vector<PCB> pcb, vector<Process> job){
+	static vector<Process> runningCPU; //holds a single, running process
+	vector<Process> temp; //temporary vector
+	Process run = job[0]; //the process that is to be run
+	bool inCrit = run.isCritical;
+
+
+	if(runningCPU.size() == 0){ //the CPU is empty, add the process
+		runningCPU.push_back(run);
 		pcb[0].status = "Running";
 
 	}
 
 	else{//the dispatcher is full, we need to save the current process, send it back to the ready queue and add the new process
-		temp.push_back(dispatcher[0]);
-		dispatcher[0] = zz;
+		temp.push_back(runningCPU[0]);
+		runningCPU[0] = run;
 		//readyQueue(temp[0]);
 	}
 
-	dispatcher[0].currentCycle--;
+	runningCPU[0].currentCycle--;
 	pcb[0].priority--;
-	if(dispatcher[0].currentCycle <= 0){
-			dispatcher.clear();
-		}
+	if(runningCPU[0].currentCycle <= 0){
+		runningCPU.clear();
+	}
+
+	return runningCPU[0];
 
 
-
-	return dispatcher[0];
-
-	/* hold the currently running process
-	 * we want to save it when we try to add a new process
-	 * dispatcher should always have a process
-	 */
 }
-
-
 
 
 
