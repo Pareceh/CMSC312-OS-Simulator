@@ -14,16 +14,23 @@
 #include<algorithm>
 #include <stdexcept>
 #include <vector>
+#include <cstdlib>
+#include <unistd.h>
 using namespace std;
 
 #include "Process.h"
 
 Process CPU(vector<PCB> pcb, vector<Process> job);
 Process dispatcher(vector<PCB> * pcb);
+vector<Process> readyQueue(vector<PCB> *pcb);
+void waitingQueue(vector<PCB> *pcb);
+void assignStatus(vector<PCB> *pcb);
+
 
 bool comparator(const PCB& lhs, const PCB& rhs) {
 	return lhs.priority < rhs.priority;
 }
+
 
 /*if a process is currently running in it's critical section, then we must send the process to the waiting queue
 if there is no process in it's critical section, then we send the process to the ready queue
@@ -38,42 +45,68 @@ scheduler -> queue -> dispatcher -> cpu
 //the scheduler sorts by least time remaining first
 vector<PCB> scheduler(vector<PCB> pcb){
 	sort(pcb.begin(), pcb.end(), &comparator);
-	vector<Process> abc = pcb[0].test[0];
 
-	if(abc[0].type == "I/O"){
-		pcb[0].status = "Waiting";
-	}
-	else{
-	}
-	for(unsigned int i = 1; i < pcb.size(); i++)
-		pcb[i].status = "Ready";
-	//send the job with the lowest priority value to the dispatcher
+	vector<vector<Process>> val = pcb[0].getTest();
+	vector<Process> abc = val[0];
+	assignStatus(&pcb);
 
-	abc[0] = dispatcher(&pcb);
-	pcb[0].priority--;
+	if(pcb[0].getStatus() == "Waiting"){
+		waitingQueue(&pcb);
+
+	}
+	//else if(pcb[0].getStatus() == "Ready")
+		abc = readyQueue(&pcb);
 
 	//aging so that the older processes may have an opportunity to run
 	if(pcb.size() > 1){
-		pcb[pcb.size()- 1].priority--;
+		pcb[pcb.size()- 1].setPriority(pcb[pcb.size()- 1].getPriority() - 1);
 	}
 
-	pcb[0].test[0] = abc;
+	val[0] = abc;
+	pcb[0].setTest(val);
+
 
 	return pcb;
 }
 
-waitingQueue(vector<PCB> pcb){
 
+void assignStatus(vector<PCB> *pcb){
+	vector<vector<Process>> holder = pcb->at(0).getTest();
+	vector<Process> storage = holder[0];
+	unsigned int j;
+	for(j = 0; j < pcb->size(); j++){
+		if(storage[0].type == "I/O" && (pcb->at(j).getStatus() != "Running")){
+			pcb->at(j).setStatus("Waiting");
+		}
+		else
+			pcb->at(j).setStatus("Ready");
+	}
 }
 
 
-vector<Process> readyQueue(vector<PCB> pcb){
 
+// wait in the waiting queue, don't send to CPU
+void waitingQueue(vector<PCB> *pcb){
+	cout << "Process in PCB, Waiting for I/O" << endl;
+	sleep(2);
+	pcb->at(0).status = "Ready";
 }
 
-Process dispatcher(vector<PCB> * pcb){
-	vector<Process> job = pcb->at(0).test[0];
-	pcb->at(0).status = "Running";
+
+vector<Process> readyQueue(vector<PCB> *pcb){
+	pcb->at(0).setStatus("Running");
+	vector<vector<Process>> level3 = pcb->at(0).getTest();
+	vector<Process> abc = level3[0];
+
+	//send from readyQueue to dispatcher
+	abc[0] = dispatcher(pcb);
+	return abc;
+}
+
+Process dispatcher(vector<PCB> *pcb){
+	vector<vector<Process>> level3 = pcb->at(0).getTest();
+	vector<Process> job = level3[0];
+	pcb->at(0).setStatus("Running");
 	return CPU(*pcb,job);
 }
 
@@ -85,23 +118,21 @@ Process CPU(vector<PCB> pcb, vector<Process> job){
 	static vector<Process> runningCPU; //holds a single, running process
 	vector<Process> temp; //temporary vector
 	Process run = job[0]; //the process that is to be run
-	bool inCrit = run.isCritical;
-
 
 	if(runningCPU.size() == 0){ //the CPU is empty, add the process
 		runningCPU.push_back(run);
-		pcb[0].status = "Running";
+		pcb[0].setStatus("Running");
 
 	}
 
 	else{//the dispatcher is full, we need to save the current process, send it back to the ready queue and add the new process
 		temp.push_back(runningCPU[0]);
 		runningCPU[0] = run;
-		//readyQueue(temp[0]);
+
 	}
 
 	runningCPU[0].currentCycle--;
-	pcb[0].priority--;
+	pcb[0].setPriority(pcb[0].getPriority() - 1);
 	if(runningCPU[0].currentCycle <= 0){
 		runningCPU.clear();
 	}

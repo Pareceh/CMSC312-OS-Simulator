@@ -42,6 +42,53 @@ public:
 		isCritical = crit;
 	}
 
+	int getActualCycle() const {
+		return actualCycle;
+	}
+
+	void setActualCycle(int actualCycle) {
+		this->actualCycle = actualCycle;
+	}
+
+	int getCurrentCycle() const {
+		return currentCycle;
+	}
+
+	void setCurrentCycle(int currentCycle) {
+		this->currentCycle = currentCycle;
+	}
+
+	bool isIsCritical() const {
+		return isCritical;
+	}
+
+	void setIsCritical(bool isCritical) {
+		this->isCritical = isCritical;
+	}
+
+	int getMaxCycle() const {
+		return maxCycle;
+	}
+
+	void setMaxCycle(int maxCycle) {
+		this->maxCycle = maxCycle;
+	}
+
+	int getMinCycle() const {
+		return minCycle;
+	}
+
+	void setMinCycle(int minCycle) {
+		this->minCycle = minCycle;
+	}
+
+	const string& getType() const {
+		return type;
+	}
+
+	void setType(const string &type) {
+		this->type = type;
+	}
 };
 
 
@@ -51,6 +98,7 @@ class PCB: public Process{
 public:
 	int pid;
 	int priority = 0;
+	int waits;
 	unsigned int i;
 	string status;
 	vector<vector<Process>> test;
@@ -59,32 +107,47 @@ public:
 		pid = id++;
 		test.push_back(processes);
 		status = "New";
+		waits = 0;
 
 		//in this case, the higher the priority the LATER it will be executed
 		for(i = 0; i < processes.size(); i++)
 			priority += processes[i].actualCycle;
 	}
 
+	int getPid() const {
+		return pid;
+	}
+
+	void setPid(int pid) {
+		this->pid = pid;
+	}
+
+	int getPriority() const {
+		return priority;
+	}
+
+	void setPriority(int priority = 0) {
+		this->priority = priority;
+	}
+
+	const string& getStatus() const {
+		return status;
+	}
+
+	void setStatus(const string &status) {
+		this->status = status;
+	}
+
+	const vector<vector<Process> >& getTest() const {
+		return test;
+	}
+
+	void setTest(const vector<vector<Process> > &test) {
+		this->test = test;
+	}
 };
 
-
-vector<vector<Process>> createQueue(vector<PCB> pcb){
-	vector<vector<Process>> result;
-	vector<Process> smaller;
-	unsigned int i;
-	for(i = 0; i < pcb.size(); i ++)
-		result = pcb[i].test;
-	for(i=0; i < result.size(); i ++)
-		smaller = result[i];
-	if(smaller[0].type == "I/O")
-		pcb[0].status = "Waiting";
-	else
-		pcb[0].status = "Running";
-	for(i = 0;pcb.size(); i ++)
-		pcb[i].status = "Ready";
-
-	return result;
-}
+			
 
 
 //function to print all the processes of a program
@@ -114,22 +177,22 @@ void print(vector<Process> jobQueue){
 		cout
 		<< left
 		<< setw(12)
-		<< jobQueue[i].type
+		<< jobQueue[i].getType()
 		<< left
 		<< setw(12)
-		<< jobQueue[i].minCycle
+		<< jobQueue[i].getMinCycle()
 		<< left
 		<< setw(12)
-		<< jobQueue[i].maxCycle
+		<< jobQueue[i].getMaxCycle()
 		<< left
 		<< setw(12)
-		<< jobQueue[i].actualCycle
+		<< jobQueue[i].getActualCycle()
 		<< left
 		<< setw(12)
-		<< jobQueue[i].currentCycle
+		<< jobQueue[i].getCurrentCycle()
 		<< left
 		<< setw(12)
-		<< jobQueue[i].isCritical
+		<< jobQueue[i].isIsCritical()
 		<< endl;
 	}
 	cout << endl;

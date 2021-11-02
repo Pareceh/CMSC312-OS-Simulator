@@ -20,13 +20,14 @@ vector<PCB> cycle(vector<PCB> pcb);
 
 int main() {
 	vector<Process> jobQueue, temp;
+	vector<vector<Process>> getTest;
 	vector<PCB> control;
 	int input, saveMin, saveMax;
 	unsigned int i;
 	int savedCount = 0;
 	int j;
 	int checker = 1;
-	static int count, tester;
+	static int count, counter2;
 	string fileName = "template1"; //default to template1 just in case
 	string stringIn, saveType, line;
 	ifstream in;
@@ -86,10 +87,9 @@ int main() {
 				in.close();
 			}
 			//randomly assign one of the processes to be critical
-			jobQueue[rand() % jobQueue.size()].isCritical = true;
-			tester++;
-			control.push_back(PCB(jobQueue, tester));
-			control = cycle(control); //do one cycle
+			jobQueue[rand() % jobQueue.size()].setIsCritical(true);
+			counter2++;
+			control.push_back(PCB(jobQueue, counter2));
 			savedCount = count;
 		}
 
@@ -100,13 +100,13 @@ int main() {
 				cerr << "No processes running.";
 			}
 			for(i=0; i < control.size(); i++){
-				cout  << "JOB NUMBER: " << control[i].pid << endl;
-				cout << "PRIORITY:" << control[i].priority << endl;
-				cout << "STATUS:" << control[i].status << endl;
-				print(control[i].test[0]);
+				cout  << "JOB NUMBER: " << control[i].getPid() << endl;
+				cout << "PRIORITY:" << control[i].getPriority() << endl;
+				cout << "STATUS:" << control[i].getStatus() << endl;
+				getTest = control[i].getTest();
+				print(getTest[0]);
 			}
 
-			control = cycle(control);
 		}
 
 		//input == 4, so we would like to display the help menu
@@ -122,16 +122,13 @@ int main() {
 					"The menu selection [5] will simulate 1 cycle without displaying an input.\n"
 					"To continue the program after any menu selection, the user will be prompted to select [1]. To exit the program after any menu selection,"
 					"the user will be prompted to select [0].\n\n";
-
-			readyQueue(control);
-
 		}
 
 		//input == 5, so we would like to simulate a cycle without displaying an output
 		else if(input ==5){
 			cout << "Simulate how many cycles?\n";
 			cin >> input;
-			for(j = 0; j < input; j++)
+			for(j = 0; j < input - 1; j++)
 				control = cycle(control);
 		}
 
@@ -142,6 +139,7 @@ int main() {
 		else
 			cerr <<"Invalid input\n";
 
+		control = cycle(control);
 		cout << "Press [1] to continue. Press[0] to exit.\n\n";
 		cin >> input;
 
@@ -152,7 +150,7 @@ int main() {
 
 //function to perform one cycle
 vector<PCB> cycle(vector<PCB> pcb){
-	vector<vector<Process>> level1 = pcb[0].test;
+	vector<vector<Process>> level1 = pcb[0].getTest();
 	vector<Process> level2 = level1[0];
 	Process level3 =level2[0];
 	pcb = scheduler(pcb);
@@ -162,7 +160,7 @@ vector<PCB> cycle(vector<PCB> pcb){
 		level2.erase(level2.begin());
 		if(level2.size() == 0){
 			pcb.erase(pcb.begin());
-			level1 = pcb[0].test;
+			level1 = pcb[0].getTest();
 			level2 = level1[0];
 			level3 = level2[0];
 			if(pcb.size() == 0){
@@ -170,7 +168,7 @@ vector<PCB> cycle(vector<PCB> pcb){
 			}
 		}
 		level1[0] = level2;
-		pcb[0].test = level1;
+		pcb[0].setTest(level1);
 		CPU(pcb,level2);
 	}
 
