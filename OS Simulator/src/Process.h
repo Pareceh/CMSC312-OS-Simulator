@@ -54,30 +54,37 @@ public:
 	unsigned int i;
 	string status;
 	vector<vector<Process>> test;
-	vector<Process> a;
 
 	PCB(vector<Process> processes, int id){
 		pid = id++;
 		test.push_back(processes);
-		status = isWaiting(test);
+		status = "New";
 
 		//in this case, the higher the priority the LATER it will be executed
 		for(i = 0; i < processes.size(); i++)
 			priority += processes[i].actualCycle;
 	}
 
-	string isWaiting(vector<vector<Process>> jobs){
-		vector<Process> process = jobs[0];
-		Process check = process[0];
-		if(process[0].type == "I/O"){
-			return "Waiting";
-		}
-		else
-			return "Ready";
-
-	}
-
 };
+
+
+vector<vector<Process>> createQueue(vector<PCB> pcb){
+	vector<vector<Process>> result;
+	vector<Process> smaller;
+	unsigned int i;
+	for(i = 0; i < pcb.size(); i ++)
+		result = pcb[i].test;
+	for(i=0; i < result.size(); i ++)
+		smaller = result[i];
+	if(smaller[0].type == "I/O")
+		pcb[0].status = "Waiting";
+	else
+		pcb[0].status = "Running";
+	for(i = 0;pcb.size(); i ++)
+		pcb[i].status = "Ready";
+
+	return result;
+}
 
 
 //function to print all the processes of a program

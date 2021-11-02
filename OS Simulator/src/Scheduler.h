@@ -48,6 +48,13 @@ vector<PCB> scheduler(vector<PCB> pcb){
 	//send the job with the lowest priority value to the dispatcher
 
 	abc[0] = dispatcher(pcb, pcb[0].test[0]);
+	pcb[0].priority--;
+
+	//aging so that the older processes may have an opportunity to run
+	if(pcb.size() > 1){
+		pcb[pcb.size()- 1].priority--;
+	}
+
 	pcb[0].test[0] = abc;
 
 	return pcb;
@@ -55,9 +62,19 @@ vector<PCB> scheduler(vector<PCB> pcb){
 
 
 
-vector<Process> readyQueue(Process process){
+vector<Process> readyQueue(vector<PCB> pcb){
+	vector<vector<Process>> processes;
+	vector<Process> process;
+	unsigned int i;
+	for(i = 0; i < pcb.size(); i++){
+		processes = pcb[i].test;
+	}
+	for(i = 0; i < processes.size();i++){
+		process = processes[i];
+	}
+	print(process);
 	static vector<Process>readyQueue;
-	readyQueue.push_back(process);
+	//readyQueue.push_back(process);
 	return readyQueue;
 	/*queue of processes ready to run
 	 * when a process is no longer in the dispatcher we send the top of the readyQueue to the dispatcher
@@ -65,6 +82,7 @@ vector<Process> readyQueue(Process process){
 
 }
 
+//the dispatcher only holds the currently running process
 Process dispatcher(vector<PCB> pcb, vector<Process> job){
 	static vector<Process> dispatcher;
 	vector<Process> test;
@@ -81,13 +99,15 @@ Process dispatcher(vector<PCB> pcb, vector<Process> job){
 	else{//the dispatcher is full, we need to save the current process, send it back to the ready queue and add the new process
 		temp.push_back(dispatcher[0]);
 		dispatcher[0] = zz;
-		readyQueue(temp[0]);
+		//readyQueue(temp[0]);
 	}
 
 	dispatcher[0].currentCycle--;
+	pcb[0].priority--;
 	if(dispatcher[0].currentCycle <= 0){
 			dispatcher.clear();
 		}
+
 
 
 	return dispatcher[0];
@@ -97,6 +117,8 @@ Process dispatcher(vector<PCB> pcb, vector<Process> job){
 	 * dispatcher should always have a process
 	 */
 }
+
+
 
 
 
