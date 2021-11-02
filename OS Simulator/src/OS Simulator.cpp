@@ -91,6 +91,7 @@ int main() {
 			counter2++;
 			control.push_back(PCB(jobQueue, counter2));
 			savedCount = count;
+			control = cycle(control);
 		}
 
 
@@ -106,7 +107,7 @@ int main() {
 				getTest = control[i].getTest();
 				print(getTest[0]);
 			}
-
+			control = cycle(control);
 		}
 
 		//input == 4, so we would like to display the help menu
@@ -139,7 +140,7 @@ int main() {
 		else
 			cerr <<"Invalid input\n";
 
-		control = cycle(control);
+
 		cout << "Press [1] to continue. Press[0] to exit.\n\n";
 		cin >> input;
 

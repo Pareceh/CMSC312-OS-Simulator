@@ -40,6 +40,7 @@ public:
 		actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
 		currentCycle = actualCycle;
 		isCritical = crit;
+
 	}
 
 	int getActualCycle() const {
@@ -65,6 +66,7 @@ public:
 	void setIsCritical(bool isCritical) {
 		this->isCritical = isCritical;
 	}
+
 
 	int getMaxCycle() const {
 		return maxCycle;
@@ -147,7 +149,7 @@ public:
 	}
 };
 
-			
+
 
 
 //function to print all the processes of a program
@@ -155,43 +157,43 @@ void print(vector<Process> jobQueue){
 	unsigned int i;
 	cout
 	<< left
-	<< setw(12)
+	<< setw(14)
 	<< "Operation"
 	<< left
-	<< setw(12)
+	<< setw(14)
 	<< "Min Cycles"
 	<< left
-	<< setw(12)
+	<< setw(14)
 	<< "Max Cycles"
 	<< left
-	<< setw(12)
-	<< "Actual Cycles"
+	<< setw(14)
+	<< "Actual"
 	<< left
-	<< setw(12)
-	<< "Current Cycles"
+	<< setw(14)
+	<< "Current"
 	<< left
-	<< setw(12)
-	<< "IsCritical?"
+	<< setw(14)
+	<< "Is Critical?"
 	<< endl;
 	for(i=0; i < jobQueue.size(); i++){
 		cout
 		<< left
-		<< setw(12)
+		<< setw(14)
 		<< jobQueue[i].getType()
 		<< left
-		<< setw(12)
+		<< setw(14)
 		<< jobQueue[i].getMinCycle()
 		<< left
-		<< setw(12)
+		<< setw(14)
 		<< jobQueue[i].getMaxCycle()
 		<< left
-		<< setw(12)
+		<< setw(14)
 		<< jobQueue[i].getActualCycle()
 		<< left
-		<< setw(12)
+		<< setw(14)
 		<< jobQueue[i].getCurrentCycle()
 		<< left
-		<< setw(12)
+		<< setw(14)
 		<< jobQueue[i].isIsCritical()
 		<< endl;
 	}
