@@ -92,7 +92,7 @@ int main() {
 				}
 				in.close();
 			}
-			//randomly assign one of the processes to be critical
+			//randomly assign one of the processes to be critical, every program will have 1 critical process
 			jobQueue[rand() % jobQueue.size()].setIsCritical(true);
 			counter2++;
 			time = clock () - time;

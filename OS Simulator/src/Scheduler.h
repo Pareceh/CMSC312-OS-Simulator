@@ -23,7 +23,6 @@ using namespace std;
 Process CPU(vector<Process> job);
 Process dispatcher(vector<PCB> * pcb);
 vector<Process> readyQueue(vector<PCB> *pcb);
-PCB waitingQueue(PCB program, int count);
 
 
 bool comparator(const PCB& lhs, const PCB& rhs) {
@@ -111,6 +110,9 @@ Process dispatcher(vector<PCB> *pcb){
 	vector<Process> job = level3[0];
 	static vector<PCB> store;
 
+	//critical section resolution, not perfect and would like to edit for the next phase
+	// resolves critical section by if the process that is about to run is in it's critical section
+	// it has the highest priority so will not be interrupted
 	if(job[0].isIsCritical()){
 		pcb->at(0).setStatus("Running");
 		pcb->at(0).setPriority(-1000);
