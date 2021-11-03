@@ -23,6 +23,7 @@ using namespace std;
 Process CPU(vector<Process> job);
 Process dispatcher(vector<PCB> * pcb);
 vector<Process> readyQueue(vector<PCB> *pcb);
+PCB waitingQueue(PCB program, int count);
 
 
 bool comparator(const PCB& lhs, const PCB& rhs) {
@@ -54,39 +55,20 @@ vector<PCB> scheduler(vector<PCB> pcb){
 	vector<Process> abc = val[0];
 	static vector<PCB> waiting;
 	vector<Process> temp1;
+	Process hold;
 
 
 	//here is the waiting queue
-	if(abc[0].getType() == "I/O" && (abc[0].getWaited() == false)){
+	if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
 		pcb[0].setStatus("Waiting");
-		waiting.push_back(pcb[0]);
-		if(waiting.size() > 1){
-			for(unsigned int i = 0; i < waiting.size() - 1; i ++){
-				if(waiting[i].getPid() == waiting[waiting.size()-1].getPid()){
-					waiting.erase(waiting.begin() + i);
-				}
-				if(waiting[i+1].getPid() == waiting[waiting.size()-1].getPid()){
-					waiting.erase(waiting.begin() + i + 1);
-				}
-			}
-		}
 
-		if(count == 3){ //wait some time before putting back
-			waiting[0].setStatus("Ready");
-			temp1 = waiting[0].test[0];
-			temp1[0].setWaited(true);
-			waiting[0].test[0] = temp1;
-			pcb.insert(pcb.begin(),waiting[0]);
-			pcb.erase(pcb.end());
+		if(pcb.size() >1 ){
+			auto it = pcb.begin() + pcb.size();
+			rotate(it, it + 1, pcb.end());
+		}
+		if(count == 3){
 			pcb[0].setStatus("Ready");
-			waiting.clear();
-			count = 0;
 		}
-		else{
-			cout << "PROCESS " << pcb[0].getPid() << " IS WAITING" << endl;
-			count++;
-		}
-
 
 	}
 
@@ -104,10 +86,9 @@ vector<PCB> scheduler(vector<PCB> pcb){
 	val[0] = abc;
 	pcb[0].setTest(val);
 
-
+	count++;
 	return pcb;
 }
-
 
 //ready Queue
 vector<Process> readyQueue(vector<PCB> *pcb){
@@ -137,7 +118,7 @@ Process dispatcher(vector<PCB> *pcb){
 	else{
 		priority = 0;
 		for(unsigned int i = 0; i < job.size(); i++)
-						priority += job[i].getActualCycle();
+			priority += job[i].getActualCycle();
 		pcb->at(0).setPriority(priority);
 		pcb->at(0).setStatus("Running");
 		priority--;

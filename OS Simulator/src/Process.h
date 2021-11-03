@@ -23,7 +23,7 @@ public:
 	int minCycle, maxCycle, actualCycle, currentCycle;
 	bool isCritical;
 	string type;
-	bool waited;
+
 
 	Process(){
 		type = "CALCULATE";
@@ -32,7 +32,7 @@ public:
 		actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
 		currentCycle = actualCycle;
 		isCritical = false;
-		waited = false;
+
 	}
 
 	Process(string function,int min, int max, bool crit){
@@ -42,17 +42,10 @@ public:
 		actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
 		currentCycle = actualCycle;
 		isCritical = crit;
-		waited = false;
+
 
 	}
 
-	bool getWaited() const{
-		return waited;
-	}
-
-	bool setWaited(bool waited){
-		return this->waited = waited;
-	}
 
 	int getActualCycle() const {
 		return actualCycle;
