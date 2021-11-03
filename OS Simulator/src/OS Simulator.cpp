@@ -1,8 +1,7 @@
 //============================================================================
 // Name        : OS.cpp
 // Author      : Hana Parece
-// Version     :
-// Copyright   : Your copyright notice
+// Created On  : Oct 15 2021
 // Description : OS simulator for CMSC 312
 //============================================================================
 
@@ -10,15 +9,25 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <time.h>
 #include <iomanip>
 
 #include "Process.h"
 #include "Scheduler.h"
 using namespace std;
 
+//to simulate 1 cycle
 vector<PCB> cycle(vector<PCB> pcb);
 
+
+//function to print all of the process information
+void print(vector<Process> jobQueue);
+
+/***************************/
+
+//main method
 int main() {
+	clock_t time = clock();
 	vector<Process> jobQueue, temp;
 	vector<vector<Process>> getTest;
 	vector<PCB> control;
@@ -89,7 +98,8 @@ int main() {
 			//randomly assign one of the processes to be critical
 			jobQueue[rand() % jobQueue.size()].setIsCritical(true);
 			counter2++;
-			control.push_back(PCB(jobQueue, counter2));
+			time = clock () - time;
+			control.push_back(PCB(jobQueue, counter2, (float)time/CLOCKS_PER_SEC));
 			savedCount = count;
 			control = cycle(control);
 		}
@@ -104,6 +114,7 @@ int main() {
 				cout  << "JOB NUMBER: " << control[i].getPid() << endl;
 				cout << "PRIORITY:" << control[i].getPriority() << endl;
 				cout << "STATUS:" << control[i].getStatus() << endl;
+				cout << "ARRIVAL TIME:" << control[i].getArrivalTime() << endl;
 				getTest = control[i].getTest();
 				print(getTest[0]);
 			}
@@ -156,7 +167,7 @@ vector<PCB> cycle(vector<PCB> pcb){
 	Process level3 =level2[0];
 	pcb = scheduler(pcb);
 
-	level3 = CPU(pcb, level2);
+	//level3 = CPU(pcb, level2);
 	if(level3.currentCycle == 0){
 		level2.erase(level2.begin());
 		if(level2.size() == 0){
@@ -178,5 +189,52 @@ vector<PCB> cycle(vector<PCB> pcb){
 	return pcb;
 }
 
+//function to print all the processes of a program
+void print(vector<Process> jobQueue){
+	unsigned int i;
+	cout
+	<< left
+	<< setw(14)
+	<< "Operation"
+	<< left
+	<< setw(14)
+	<< "Min Cycles"
+	<< left
+	<< setw(14)
+	<< "Max Cycles"
+	<< left
+	<< setw(14)
+	<< "Actual"
+	<< left
+	<< setw(14)
+	<< "Current"
+	<< left
+	<< setw(14)
+	<< "Is Critical?"
+	<< endl;
+	for(i=0; i < jobQueue.size(); i++){
+		cout
+		<< left
+		<< setw(14)
+		<< jobQueue[i].getType()
+		<< left
+		<< setw(14)
+		<< jobQueue[i].getMinCycle()
+		<< left
+		<< setw(14)
+		<< jobQueue[i].getMaxCycle()
+		<< left
+		<< setw(14)
+		<< jobQueue[i].getActualCycle()
+		<< left
+		<< setw(14)
+		<< jobQueue[i].getCurrentCycle()
+		<< left
+		<< setw(14)
+		<< jobQueue[i].isIsCritical()
+		<< endl;
+	}
+	cout << endl;
+}
 
 
