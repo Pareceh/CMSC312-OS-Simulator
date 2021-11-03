@@ -20,9 +20,6 @@ using namespace std;
 vector<PCB> cycle(vector<PCB> pcb);
 
 
-//function to print all of the process information
-void print(vector<Process> jobQueue);
-
 /***************************/
 
 //main method
@@ -140,7 +137,7 @@ int main() {
 		else if(input ==5){
 			cout << "Simulate how many cycles?\n";
 			cin >> input;
-			for(j = 0; j < input - 1; j++)
+			for(j = 0; j < input; j++)
 				control = cycle(control);
 		}
 
@@ -181,7 +178,7 @@ vector<PCB> cycle(vector<PCB> pcb){
 		}
 		level1[0] = level2;
 		pcb[0].setTest(level1);
-		CPU(pcb,level2);
+		CPU(level2);
 	}
 
 
@@ -189,52 +186,6 @@ vector<PCB> cycle(vector<PCB> pcb){
 	return pcb;
 }
 
-//function to print all the processes of a program
-void print(vector<Process> jobQueue){
-	unsigned int i;
-	cout
-	<< left
-	<< setw(14)
-	<< "Operation"
-	<< left
-	<< setw(14)
-	<< "Min Cycles"
-	<< left
-	<< setw(14)
-	<< "Max Cycles"
-	<< left
-	<< setw(14)
-	<< "Actual"
-	<< left
-	<< setw(14)
-	<< "Current"
-	<< left
-	<< setw(14)
-	<< "Is Critical?"
-	<< endl;
-	for(i=0; i < jobQueue.size(); i++){
-		cout
-		<< left
-		<< setw(14)
-		<< jobQueue[i].getType()
-		<< left
-		<< setw(14)
-		<< jobQueue[i].getMinCycle()
-		<< left
-		<< setw(14)
-		<< jobQueue[i].getMaxCycle()
-		<< left
-		<< setw(14)
-		<< jobQueue[i].getActualCycle()
-		<< left
-		<< setw(14)
-		<< jobQueue[i].getCurrentCycle()
-		<< left
-		<< setw(14)
-		<< jobQueue[i].isIsCritical()
-		<< endl;
-	}
-	cout << endl;
-}
+
 
 
