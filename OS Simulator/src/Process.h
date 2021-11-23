@@ -20,7 +20,7 @@ using namespace std;
 
 class Process{
 public:
-	int minCycle, maxCycle, actualCycle, currentCycle;
+	int minCycle, maxCycle, actualCycle, currentCycle, memoryNeeded;
 	bool isCritical;
 	string type;
 
@@ -32,6 +32,7 @@ public:
 		actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
 		currentCycle = actualCycle;
 		isCritical = false;
+		memoryNeeded = 5;
 
 	}
 
@@ -42,6 +43,7 @@ public:
 		actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
 		currentCycle = actualCycle;
 		isCritical = crit;
+		memoryNeeded = rand()% 20 + 1;
 
 
 	}
@@ -95,6 +97,14 @@ public:
 	void setType(const string &type) {
 		this->type = type;
 	}
+
+	int getMemoryNeeded() const {
+			return memoryNeeded;
+		}
+
+	void setMemoryNeeded(int memoryNeeded) {
+			this->memoryNeeded = memoryNeeded;
+		}
 };
 
 
@@ -104,25 +114,34 @@ class PCB: public Process{
 public:
 	int pid;
 	int priority = 0;
-	int waits;
 	unsigned int i;
 	string status;
 	vector<vector<Process>> test;
 	float arrivalTime;
+	int memoryUse = 0;
 
 	PCB(vector<Process> processes, int id, float time){
 		pid = id++;
 		test.push_back(processes);
 		status = "New";
-		waits = 0;
 		arrivalTime = time;
 
 		//in this case, the higher the priority the LATER it will be executed
-		for(i = 0; i < processes.size(); i++)
-			priority += processes[i].actualCycle;
+		for(i = 0; i < processes.size(); i++){
+			priority += processes[i].getActualCycle();
+			memoryUse += processes[i].getMemoryNeeded();
+		}
 	}
 
 	//getters and setters for PCB class
+
+	int getMemoryUse() const {
+			return memoryUse;
+		}
+
+	void setMemoryUse(unsigned int memoryUse) {
+			this->memoryUse = memoryUse;
+		}
 
 	int getPid() const {
 		return pid;
@@ -188,6 +207,9 @@ void print(vector<Process> jobQueue){
 	<< left
 	<< setw(14)
 	<< "Is Critical?"
+	<< left
+	<< setw(14)
+	<< "Memory Need"
 	<< endl;
 	for(i=0; i < jobQueue.size(); i++){
 		cout
@@ -209,6 +231,9 @@ void print(vector<Process> jobQueue){
 		<< left
 		<< setw(14)
 		<< jobQueue[i].isIsCritical()
+		<< left
+		<< setw(14)
+		<< jobQueue[i].getMemoryNeeded()
 		<< endl;
 	}
 	cout << endl;

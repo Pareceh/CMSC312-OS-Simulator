@@ -17,7 +17,7 @@
 using namespace std;
 
 //to simulate 1 cycle
-vector<PCB> cycle(vector<PCB> pcb);
+vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse);
 
 
 /***************************/
@@ -37,12 +37,17 @@ int main() {
 	string fileName = "template1"; //default to template1 just in case
 	string stringIn, saveType, line;
 	ifstream in;
+	const unsigned int TOTAL_MEMORY = 1024;
+	int memoryInUse = 0;
 
 	cout << "Welcome to OS Simulator\n_______________________\n\nPress [1] to continue. Press [0] to exit." << endl;
 	cin >> input;
 	while(input == 1){
+		cout << "Memory in Use: " << memoryInUse << endl;
+		cout << "Memory Available: " << TOTAL_MEMORY - memoryInUse << endl;
 		cout << "_______________________\n\nPress [2] to load a job\nPress [3] to display statistics\n"
 				<< "Press [4] for help\nPress [5] to simulate a cycles and display no output\nPress [0] to exit." << endl << endl;
+
 		cin >> input;
 
 		//input == 2, so we would like to load a job/process
@@ -98,7 +103,7 @@ int main() {
 			time = clock () - time;
 			control.push_back(PCB(jobQueue, counter2, (float)time/CLOCKS_PER_SEC));
 			savedCount = count;
-			control = cycle(control);
+			control = cycle(control, &memoryInUse);
 		}
 
 
@@ -112,10 +117,11 @@ int main() {
 				cout << "PRIORITY:" << control[i].getPriority() << endl;
 				cout << "STATUS:" << control[i].getStatus() << endl;
 				cout << "ARRIVAL TIME:" << control[i].getArrivalTime() << endl;
+				cout << "MEMORY NEEDED:" << control[i].getMemoryUse() << endl;
 				getTest = control[i].getTest();
 				print(getTest[0]);
 			}
-			control = cycle(control);
+			control = cycle(control, &memoryInUse);
 		}
 
 		//input == 4, so we would like to display the help menu
@@ -138,7 +144,7 @@ int main() {
 			cout << "Simulate how many cycles?\n";
 			cin >> input;
 			for(j = 0; j < input; j++)
-				control = cycle(control);
+				control = cycle(control, &memoryInUse);
 		}
 
 
@@ -158,13 +164,12 @@ int main() {
 
 
 //function to perform one cycle
-vector<PCB> cycle(vector<PCB> pcb){
+vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse){
 	vector<vector<Process>> level1 = pcb[0].getTest();
 	vector<Process> level2 = level1[0];
 	Process level3 =level2[0];
-	pcb = scheduler(pcb);
+	pcb = scheduler(pcb, &memoryInUse);
 
-	//level3 = CPU(pcb, level2);
 	if(level3.currentCycle == 0){
 		level2.erase(level2.begin());
 		if(level2.size() == 0){

@@ -45,8 +45,24 @@ scheduler -> queue -> dispatcher -> cpu
 
 
 //the scheduler sorts by least time remaining first
-vector<PCB> scheduler(vector<PCB> pcb){
+vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 	static int count = 0;
+	static vector<int> memoried;
+	static vector<int>::iterator it;
+
+	//count memory for the processes
+	int key = pcb[pcb.size() -1].getPid();
+	it = find(memoried.begin(), memoried.end(), key);
+
+	if(it != memoried.end()){
+
+	}
+	else{
+		**memoryInUse += pcb[pcb.size() -1].getMemoryUse();
+		cout << **memoryInUse << endl;;
+		memoried.push_back(pcb[pcb.size() -1].getPid());
+
+	}
 
 	sort(pcb.begin(), pcb.end(), &comparator);
 
@@ -60,13 +76,14 @@ vector<PCB> scheduler(vector<PCB> pcb){
 	//here is the waiting queue
 	if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
 		pcb[0].setStatus("Waiting");
-
+		count++;
 		if(pcb.size() >1 ){
 			auto it = pcb.begin() + pcb.size();
 			rotate(it, it + 1, pcb.end());
 		}
 		if(count == 3){
 			pcb[0].setStatus("Ready");
+			count = 0;
 		}
 
 	}
@@ -85,7 +102,6 @@ vector<PCB> scheduler(vector<PCB> pcb){
 	val[0] = abc;
 	pcb[0].setTest(val);
 
-	count++;
 	return pcb;
 }
 
@@ -113,7 +129,7 @@ Process dispatcher(vector<PCB> *pcb){
 	//critical section resolution, not perfect and would like to edit for the next phase
 	// resolves critical section by if the process that is about to run is in it's critical section
 	// it has the highest priority so will not be interrupted
-	if(job[0].isIsCritical()){
+	/*if(job[0].isIsCritical()){
 		pcb->at(0).setStatus("Running");
 		pcb->at(0).setPriority(-1000);
 	}
@@ -125,7 +141,7 @@ Process dispatcher(vector<PCB> *pcb){
 		pcb->at(0).setStatus("Running");
 		priority--;
 		pcb->at(0).setPriority(priority);
-	}
+	}*/
 	return CPU(job);
 }
 
