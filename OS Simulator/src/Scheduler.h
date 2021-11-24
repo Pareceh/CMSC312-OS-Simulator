@@ -22,7 +22,7 @@ using namespace std;
 
 Process CPU(vector<Process> job);
 Process dispatcher(vector<PCB> * pcb);
-vector<Process> readyQueue(vector<PCB> *pcb);
+vector<Process> readyQueue(vector<PCB> *pcb, int ***memory);
 
 
 bool comparator(const PCB& lhs, const PCB& rhs) {
@@ -46,75 +46,134 @@ scheduler -> queue -> dispatcher -> cpu
 
 //the scheduler sorts by least time remaining first
 vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
+	const unsigned int TOTAL_MEMORY = 1024;
 	static int count = 0;
 	static vector<int> memoried;
 	static vector<int>::iterator it;
-
-	//count memory for the processes
-	int key = pcb[pcb.size() -1].getPid();
-	it = find(memoried.begin(), memoried.end(), key);
-
-	if(it != memoried.end()){
-
-	}
-	else{
-		**memoryInUse += pcb[pcb.size() -1].getMemoryUse();
-		cout << **memoryInUse << endl;;
-		memoried.push_back(pcb[pcb.size() -1].getPid());
-
-	}
-
-	sort(pcb.begin(), pcb.end(), &comparator);
-
 	vector<vector<Process>> val = pcb[0].getTest();
 	vector<Process> abc = val[0];
 	static vector<PCB> waiting;
 	vector<Process> temp1;
 	Process hold;
+	int key = pcb[pcb.size() -1].getPid();
+
+	//count memory for the processes, we only want to add the memory that is being used once
 
 
-	//here is the waiting queue
-	if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
-		pcb[0].setStatus("Waiting");
-		count++;
-		if(pcb.size() >1 ){
-			auto it = pcb.begin() + pcb.size();
-			rotate(it, it + 1, pcb.end());
+	//if the memory of the process we just received is greater than the memory we have available
+	//then the process needs to stay in the "New" or "Waiting" queue
+	//if the processID is in it, then it will be sent to the "Waiting" Queue
+	//otherwise the process stays in the "New" state
+	if(pcb[pcb.size() - 1].getMemoryUse() > (TOTAL_MEMORY - **memoryInUse)){
+		it = find(memoried.begin(), memoried.end(), pcb[pcb.size()-1].getPid());
+		if(it != memoried.end()){
+			//send to waiting
+
+			return pcb;
 		}
-		if(count == 3){
+		else{
+			//status stays as new
+			pcb[pcb.size()-1].setStatus("New");
+			sort(pcb.begin(), pcb.end() - 1, &comparator);
+
+			//here is the waiting queue
+			if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
+				pcb[0].setStatus("Waiting");
+				count++;
+				if(pcb.size() >1 ){
+					auto it = pcb.begin() + pcb.size();
+					rotate(it, it + 1, pcb.end());
+				}
+				if(count == 3){
+					pcb[0].setStatus("Ready");
+					count = 0;
+				}
+
+			}
+
+			//send to ready queue
+			if(pcb[0].getStatus()!= "Waiting"){
+				pcb[0].setStatus("Ready");
+				abc = readyQueue(&pcb, &memoryInUse);
+			}
+
+			//aging so that the older processes may have an opportunity to run
+			if(pcb.size() > 2){
+				pcb[pcb.size()- 1].setPriority(pcb[pcb.size()- 1].getPriority() - 1);
+			}
+
+			val[0] = abc;
+			pcb[0].setTest(val);
+
+			return pcb;
+		}
+	}
+
+	//there are no memory issues, continue
+	else{
+		it = find(memoried.begin(), memoried.end(), key);
+		if(it != memoried.end()){
+
+		}
+		else{
+			**memoryInUse += pcb[pcb.size() -1].getMemoryUse();
+			memoried.push_back(pcb[pcb.size() -1].getPid());
+
+		}
+
+		sort(pcb.begin(), pcb.end(), &comparator);
+
+
+		//here is the waiting queue
+		if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
+			pcb[0].setStatus("Waiting");
+			count++;
+			if(pcb.size() >1 ){
+				auto it = pcb.begin() + pcb.size();
+				rotate(it, it + 1, pcb.end());
+			}
+			if(count == 3){
+				pcb[0].setStatus("Ready");
+				count = 0;
+			}
+
+		}
+
+		//send to ready queue
+		if(pcb[0].getStatus()!= "Waiting"){
 			pcb[0].setStatus("Ready");
-			count = 0;
+			abc = readyQueue(&pcb, &memoryInUse);
 		}
 
+		//aging so that the older processes may have an opportunity to run
+		if(pcb.size() > 2){
+			pcb[pcb.size()- 1].setPriority(pcb[pcb.size()- 1].getPriority() - 1);
+		}
+
+		val[0] = abc;
+		pcb[0].setTest(val);
+
+		return pcb;
 	}
-
-	//send to ready queue
-	if(pcb[0].getStatus()!= "Waiting"){
-		pcb[0].setStatus("Ready");
-		abc = readyQueue(&pcb);
-	}
-
-	//aging so that the older processes may have an opportunity to run
-	if(pcb.size() > 2){
-		pcb[pcb.size()- 1].setPriority(pcb[pcb.size()- 1].getPriority() - 1);
-	}
-
-	val[0] = abc;
-	pcb[0].setTest(val);
-
-	return pcb;
 }
 
 //ready Queue
-vector<Process> readyQueue(vector<PCB> *pcb){
+vector<Process> readyQueue(vector<PCB> *pcb, int ***memoryInUse ){
 	vector<vector<Process>> level3 = pcb->at(0).getTest();
 	vector<Process> abc = level3[0];
 
 	//send from readyQueue to dispatcher
-	abc[0] = dispatcher(pcb);
-	for(unsigned int i =1; i < pcb->size(); i++){
-		pcb->at(i).setStatus("Ready");
+	//abc[0] = dispatcher(pcb);
+	for(unsigned int i = 0; i < pcb->size(); i++){
+		if(pcb->at(i).getMemoryUse() <= (1024 - ***memoryInUse)){
+			pcb->at(i).setStatus("Ready");
+		}
+		else{
+
+		}
 	}
+	abc[0] = dispatcher(pcb);
+
 	return abc;
 }
 
@@ -133,15 +192,15 @@ Process dispatcher(vector<PCB> *pcb){
 		pcb->at(0).setStatus("Running");
 		pcb->at(0).setPriority(-1000);
 	}
-	else{
-		priority = 0;
-		for(unsigned int i = 0; i < job.size(); i++)
-			priority += job[i].getActualCycle();
-		pcb->at(0).setPriority(priority);
-		pcb->at(0).setStatus("Running");
-		priority--;
-		pcb->at(0).setPriority(priority);
-	}*/
+	else{*/
+	//priority = 0;
+	for(unsigned int i = 0; i < job.size(); i++)
+		priority += job[i].getActualCycle();
+	pcb->at(0).setPriority(priority);
+	pcb->at(0).setStatus("Running");
+	priority--;
+	pcb->at(0).setPriority(priority);
+	//}
 	return CPU(job);
 }
 

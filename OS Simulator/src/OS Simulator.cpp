@@ -171,7 +171,10 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse){
 	pcb = scheduler(pcb, &memoryInUse);
 
 	if(level3.currentCycle == 0){
+		*memoryInUse = *memoryInUse - level2[0].getMemoryNeeded();
+		pcb[0].setMemoryNeeded(pcb[0].getMemoryNeeded() - level2[0].getMemoryNeeded());
 		level2.erase(level2.begin());
+
 		if(level2.size() == 0){
 			pcb.erase(pcb.begin());
 			level1 = pcb[0].getTest();
@@ -181,6 +184,7 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse){
 				cerr << "No Processes Running";
 			}
 		}
+
 		level1[0] = level2;
 		pcb[0].setTest(level1);
 		CPU(level2);
