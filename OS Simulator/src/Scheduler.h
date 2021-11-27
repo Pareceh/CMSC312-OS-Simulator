@@ -46,7 +46,6 @@ scheduler -> queue -> dispatcher -> cpu
 
 //the scheduler sorts by least time remaining first
 vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
-	const unsigned int TOTAL_MEMORY = 1024;
 	static int count = 0;
 	static vector<int> memoried;
 	static vector<int>::iterator it;
@@ -64,10 +63,40 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 	//then the process needs to stay in the "New" or "Waiting" queue
 	//if the processID is in it, then it will be sent to the "Waiting" Queue
 	//otherwise the process stays in the "New" state
-	if(pcb[pcb.size() - 1].getMemoryUse() > (TOTAL_MEMORY - **memoryInUse)){
+
+	if(pcb[pcb.size() - 1].getMemoryUse() > (1024 - **memoryInUse)){
+
 		it = find(memoried.begin(), memoried.end(), pcb[pcb.size()-1].getPid());
+
 		if(it != memoried.end()){
 			//send to waiting
+			if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
+				pcb[0].setStatus("Waiting");
+				count++;
+				if(pcb.size() >1 ){
+					auto it = pcb.begin() + pcb.size();
+					rotate(it, it + 1, pcb.end());
+				}
+				if(count == 3){
+					pcb[0].setStatus("Ready");
+					count = 0;
+				}
+
+			}
+
+			//send to ready queue
+			if(pcb[0].getStatus()!= "Waiting"){
+				pcb[0].setStatus("Ready");
+				abc = readyQueue(&pcb, &memoryInUse);
+			}
+
+			//aging so that the older processes may have an opportunity to run
+			if(pcb.size() > 2){
+				pcb[pcb.size()- 1].setPriority(pcb[pcb.size()- 1].getPriority() - 1);
+			}
+
+			val[0] = abc;
+			pcb[0].setTest(val);
 
 			return pcb;
 		}
@@ -163,7 +192,6 @@ vector<Process> readyQueue(vector<PCB> *pcb, int ***memoryInUse ){
 	vector<Process> abc = level3[0];
 
 	//send from readyQueue to dispatcher
-	//abc[0] = dispatcher(pcb);
 	for(unsigned int i = 0; i < pcb->size(); i++){
 		if(pcb->at(i).getMemoryUse() <= (1024 - ***memoryInUse)){
 			pcb->at(i).setStatus("Ready");

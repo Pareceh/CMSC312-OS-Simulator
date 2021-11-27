@@ -194,7 +194,3 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse){
 
 	return pcb;
 }
-
-
-
-
