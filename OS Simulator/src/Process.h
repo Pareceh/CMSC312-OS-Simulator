@@ -211,7 +211,7 @@ void print(vector<Process> jobQueue){
 	<< setw(14)
 	<< "Memory Need"
 	<< endl;
-	for(i=0; i < jobQueue.size(); i++){
+	for(i= 0; i < jobQueue.size(); i++){
 		cout
 		<< left
 		<< setw(14)

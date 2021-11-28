@@ -11,13 +11,13 @@
 #include <vector>
 #include <time.h>
 #include <iomanip>
-
 #include "Process.h"
 #include "Scheduler.h"
 using namespace std;
 
-//to simulate 1 cycle
-vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse);
+
+vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse); //to simulate 1 cycle
+int randomIO(); //to create a random I/O Event (1/100 chance per cycle)
 
 
 /***************************/
@@ -149,8 +149,13 @@ int main() {
 
 
 		//input == 0, so we would like to exit the program
-		else if(input == 0)
+		// in theory we would want to free up all memory when we exit the program
+		else if(input == 0){
+			control.erase(control.begin(), control.end()); //shut down all processes
+			memoryInUse = 0; // free up memory
 			break;
+		}
+
 		else
 			cerr <<"Invalid input\n";
 
@@ -164,33 +169,57 @@ int main() {
 
 
 //function to perform one cycle
+// during each cycle we want there to be a random chance of an I/O event happening.
+
 vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse){
 	vector<vector<Process>> level1 = pcb[0].getTest();
 	vector<Process> level2 = level1[0];
 	Process level3 =level2[0];
-	pcb = scheduler(pcb, &memoryInUse);
+	if(randomIO() > 3){
+		pcb = scheduler(pcb, &memoryInUse);
+		if(level3.currentCycle == 0){
+			*memoryInUse = *memoryInUse - level2[0].getMemoryNeeded();
+			pcb[0].setMemoryNeeded(pcb[0].getMemoryNeeded() - level2[0].getMemoryNeeded());
+			level2.erase(level2.begin());
 
-	if(level3.currentCycle == 0){
-		*memoryInUse = *memoryInUse - level2[0].getMemoryNeeded();
-		pcb[0].setMemoryNeeded(pcb[0].getMemoryNeeded() - level2[0].getMemoryNeeded());
-		level2.erase(level2.begin());
-
-		if(level2.size() == 0){
-			pcb.erase(pcb.begin());
-			level1 = pcb[0].getTest();
-			level2 = level1[0];
-			level3 = level2[0];
-			if(pcb.size() == 0){
-				cerr << "No Processes Running";
+			if(level2.size() == 0){
+				pcb.erase(pcb.begin());
+				level1 = pcb[0].getTest();
+				level2 = level1[0];
+				level3 = level2[0];
+				if(pcb.size() == 0){
+					cerr << "No Processes Running";
+				}
 			}
-		}
 
-		level1[0] = level2;
-		pcb[0].setTest(level1);
-		CPU(level2);
+			level1[0] = level2;
+			pcb[0].setTest(level1);
+			CPU(level2);
+		}
 	}
 
-
+	for(unsigned int i = 0; i < pcb.size(); i++){
+			pcb[i].setStatus("Waiting");
+	}
 
 	return pcb;
+}
+
+int randomIO(){
+	static int count;
+	int num;
+	num = rand() % 100 + 1;
+	if(num == 50){
+		cout << "Random I/O Event Triggered, Waiting " << 3 - count <<  " Cycles" << endl;
+		if(count == 3){
+			count = 0;
+			return count;
+		}
+		else
+			count++;
+		return count;
+	}
+	count = 50;
+	return count;
+
 }

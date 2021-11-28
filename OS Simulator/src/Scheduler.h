@@ -57,8 +57,6 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 	int key = pcb[pcb.size() -1].getPid();
 
 	//count memory for the processes, we only want to add the memory that is being used once
-
-
 	//if the memory of the process we just received is greater than the memory we have available
 	//then the process needs to stay in the "New" or "Waiting" queue
 	//if the processID is in it, then it will be sent to the "Waiting" Queue
@@ -72,10 +70,11 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 			//send to waiting
 			if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
 				pcb[0].setStatus("Waiting");
+				pcb[pcb.size()-1].setStatus("Waiting");
 				count++;
 				if(pcb.size() >1 ){
-					auto it = pcb.begin() + pcb.size();
-					rotate(it, it + 1, pcb.end());
+					auto mi = pcb.begin() + pcb.size() -1;
+					rotate(mi, mi + 1, pcb.end());
 				}
 				if(count == 3){
 					pcb[0].setStatus("Ready");
@@ -110,8 +109,8 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 				pcb[0].setStatus("Waiting");
 				count++;
 				if(pcb.size() >1 ){
-					auto it = pcb.begin() + pcb.size();
-					rotate(it, it + 1, pcb.end());
+					auto mi = pcb.begin() + pcb.size() -1;
+					rotate(mi, mi + 1, pcb.end());
 				}
 				if(count == 3){
 					pcb[0].setStatus("Ready");
@@ -158,8 +157,8 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 			pcb[0].setStatus("Waiting");
 			count++;
 			if(pcb.size() >1 ){
-				auto it = pcb.begin() + pcb.size();
-				rotate(it, it + 1, pcb.end());
+				auto mi = pcb.begin() + pcb.size();
+				rotate(mi, mi + 1, pcb.end());
 			}
 			if(count == 3){
 				pcb[0].setStatus("Ready");
@@ -193,12 +192,8 @@ vector<Process> readyQueue(vector<PCB> *pcb, int ***memoryInUse ){
 
 	//send from readyQueue to dispatcher
 	for(unsigned int i = 0; i < pcb->size(); i++){
-		if(pcb->at(i).getMemoryUse() <= (1024 - ***memoryInUse)){
+		if(pcb->at(i).getMemoryUse() <= (1024 - ***memoryInUse))
 			pcb->at(i).setStatus("Ready");
-		}
-		else{
-
-		}
 	}
 	abc[0] = dispatcher(pcb);
 
