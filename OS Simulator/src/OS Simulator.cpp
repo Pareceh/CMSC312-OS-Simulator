@@ -114,10 +114,13 @@ int main() {
 			}
 			for(i=0; i < control.size(); i++){
 				cout  << "JOB NUMBER: " << control[i].getPid() << endl;
-				cout << "PRIORITY:" << control[i].getPriority() << endl;
-				cout << "STATUS:" << control[i].getStatus() << endl;
-				cout << "ARRIVAL TIME:" << control[i].getArrivalTime() << endl;
-				cout << "MEMORY NEEDED:" << control[i].getMemoryUse() << endl;
+				cout << "PRIORITY: " << control[i].getPriority() << endl;
+				cout << "STATUS: " << control[i].getStatus() << endl;
+				cout << "ARRIVAL TIME: " << control[i].getArrivalTime() << endl;
+				cout << "MEMORY NEEDED: " << control[i].getMemoryUse() << endl;
+				if(control[i].getparentID() != 0){
+					cout << "THIS CHILD'S PARENT'S ID: " << control[i].getparentID() << endl;
+				}
 				getTest = control[i].getTest();
 				print(getTest[0]);
 			}
@@ -197,10 +200,12 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse){
 			CPU(level2);
 		}
 	}
-
-	for(unsigned int i = 0; i < pcb.size(); i++){
-			pcb[i].setStatus("Waiting");
+	else{
+		for(unsigned int i = 0; i < pcb.size(); i++){
+				pcb[i].setStatus("Waiting");
+		}
 	}
+
 
 	return pcb;
 }

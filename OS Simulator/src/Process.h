@@ -113,6 +113,7 @@ public:
 class PCB: public Process{
 public:
 	int pid;
+	int parentID;
 	int priority = 0;
 	unsigned int i;
 	string status;
@@ -122,6 +123,7 @@ public:
 
 	PCB(vector<Process> processes, int id, float time){
 		pid = id++;
+		parentID = 0;
 		test.push_back(processes);
 		status = "New";
 		arrivalTime = time;
@@ -134,6 +136,14 @@ public:
 	}
 
 	//getters and setters for PCB class
+
+	int getparentID() const{
+		return parentID;
+	}
+
+	void setparentID(int parentID){
+		this->parentID = parentID;
+	}
 
 	int getMemoryUse() const {
 			return memoryUse;

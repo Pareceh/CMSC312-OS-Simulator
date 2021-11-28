@@ -11,6 +11,7 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <time.h>
 #include<algorithm>
 #include <stdexcept>
 #include <vector>
@@ -49,12 +50,14 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 	static int count = 0;
 	static vector<int> memoried;
 	static vector<int>::iterator it;
+	static vector<int> IDs;
 	vector<vector<Process>> val = pcb[0].getTest();
 	vector<Process> abc = val[0];
 	static vector<PCB> waiting;
 	vector<Process> temp1;
 	Process hold;
 	int key = pcb[pcb.size() -1].getPid();
+	int newForkID = 0;
 
 	//count memory for the processes, we only want to add the memory that is being used once
 	//if the memory of the process we just received is greater than the memory we have available
@@ -139,6 +142,7 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 
 	//there are no memory issues, continue
 	else{
+		IDs.push_back(pcb[pcb.size() -1].getPid());
 		it = find(memoried.begin(), memoried.end(), key);
 		if(it != memoried.end()){
 
@@ -150,6 +154,23 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 		}
 
 		sort(pcb.begin(), pcb.end(), &comparator);
+
+		//if the type equals fork, we want to create a child process
+		if(abc[0].getType() == "FORK"){
+			vector<Process> Fork;
+			cout << abc.size() << endl;
+			for(unsigned int l = 1; l < abc.size(); l++){
+				Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
+				process.setMemoryNeeded(abc[l].getMemoryNeeded());
+				process.setActualCycle(abc[l].getActualCycle());
+				process.setCurrentCycle(abc[l].getCurrentCycle());
+				Fork.push_back(process);
+			}
+			newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
+			PCB holder(Fork,newForkID,5);
+			holder.setparentID(pcb[0].getPid());
+			pcb.push_back(holder);
+		}
 
 
 		//here is the waiting queue
