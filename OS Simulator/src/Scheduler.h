@@ -70,6 +70,25 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 		it = find(memoried.begin(), memoried.end(), pcb[pcb.size()-1].getPid());
 
 		if(it != memoried.end()){
+
+			sort(pcb.begin(), pcb.end() - 1, &comparator);
+			//if the type equals fork, we want to create a child process
+			if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
+				vector<Process> Fork;
+				cout << abc.size() << endl;
+				for(unsigned int l = 1; l < abc.size(); l++){
+					Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
+					process.setMemoryNeeded(abc[l].getMemoryNeeded());
+					process.setActualCycle(abc[l].getActualCycle());
+					process.setCurrentCycle(abc[l].getCurrentCycle());
+					Fork.push_back(process);
+				}
+				newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
+				PCB holder(Fork,newForkID,5);
+				holder.setparentID(pcb[0].getPid());
+				pcb.push_back(holder);
+			}
+
 			//send to waiting
 			if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
 				pcb[0].setStatus("Waiting");
@@ -106,6 +125,23 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 			//status stays as new
 			pcb[pcb.size()-1].setStatus("New");
 			sort(pcb.begin(), pcb.end() - 1, &comparator);
+
+			//if the type equals fork, we want to create a child process
+			if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
+				vector<Process> Fork;
+				cout << abc.size() << endl;
+				for(unsigned int l = 1; l < abc.size(); l++){
+					Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
+					process.setMemoryNeeded(abc[l].getMemoryNeeded());
+					process.setActualCycle(abc[l].getActualCycle());
+					process.setCurrentCycle(abc[l].getCurrentCycle());
+					Fork.push_back(process);
+				}
+				newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
+				PCB holder(Fork,newForkID,5);
+				holder.setparentID(pcb[0].getPid());
+				pcb.push_back(holder);
+			}
 
 			//here is the waiting queue
 			if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
@@ -156,7 +192,7 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 		sort(pcb.begin(), pcb.end(), &comparator);
 
 		//if the type equals fork, we want to create a child process
-		if(abc[0].getType() == "FORK"){
+		if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
 			vector<Process> Fork;
 			cout << abc.size() << endl;
 			for(unsigned int l = 1; l < abc.size(); l++){
@@ -228,23 +264,13 @@ Process dispatcher(vector<PCB> *pcb){
 	vector<vector<Process>> level3 = pcb->at(0).getTest();
 	vector<Process> job = level3[0];
 	static vector<PCB> store;
-
-	//critical section resolution, not perfect and would like to edit for the next phase
-	// resolves critical section by if the process that is about to run is in it's critical section
-	// it has the highest priority so will not be interrupted
-	/*if(job[0].isIsCritical()){
-		pcb->at(0).setStatus("Running");
-		pcb->at(0).setPriority(-1000);
-	}
-	else{*/
-	//priority = 0;
+	priority = 0;
 	for(unsigned int i = 0; i < job.size(); i++)
 		priority += job[i].getActualCycle();
 	pcb->at(0).setPriority(priority);
 	pcb->at(0).setStatus("Running");
 	priority--;
 	pcb->at(0).setPriority(priority);
-	//}
 	return CPU(job);
 }
 
@@ -276,7 +302,5 @@ Process CPU(vector<Process> job){
 
 
 }
-
-
 
 #endif /* SCHEDULER_H_ */

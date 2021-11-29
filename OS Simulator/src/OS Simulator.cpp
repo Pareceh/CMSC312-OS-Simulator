@@ -154,17 +154,28 @@ int main() {
 		//input == 0, so we would like to exit the program
 		// in theory we would want to free up all memory when we exit the program
 		else if(input == 0){
+			cout << "Closing processes..." << endl;
 			control.erase(control.begin(), control.end()); //shut down all processes
+			cout << "Freeing memory..." << endl;
 			memoryInUse = 0; // free up memory
 			break;
 		}
 
-		else
+		else{
 			cerr <<"Invalid input\n";
+		}
 
 
-		cout << "Press [1] to continue. Press[0] to exit.\n\n";
+		cout << "Press [1] to continue. Press[0] to exit." << endl << endl;
 		cin >> input;
+		if(input > 1){
+			cout << "Invalid input, closing program..." << endl;;
+			cout << "Closing processes..." << endl;
+			control.erase(control.begin(), control.end()); //shut down all processes
+			cout << "Freeing memory..." << endl;
+			memoryInUse = 0; // free up memory
+		}
+
 
 	}
 	return 0;
@@ -202,7 +213,7 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse){
 	}
 	else{
 		for(unsigned int i = 0; i < pcb.size(); i++){
-				pcb[i].setStatus("Waiting");
+			pcb[i].setStatus("Waiting");
 		}
 	}
 
