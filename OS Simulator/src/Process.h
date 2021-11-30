@@ -123,7 +123,7 @@ public:
 
 	PCB(vector<Process> processes, int id, float time){
 		pid = id++;
-		parentID = 0;
+		parentID = 0; //parentID is 0 if the process is NOT a child
 		test.push_back(processes);
 		status = "New";
 		arrivalTime = time;

@@ -46,45 +46,53 @@ scheduler -> queue -> dispatcher -> cpu
 
 
 //the scheduler sorts by least time remaining first
-vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
+vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse, clock_t **time){
+	clock_t timer;
 	static int count = 0;
 	static vector<int> memoried;
 	static vector<int>::iterator it;
 	static vector<int> IDs;
 	vector<vector<Process>> val = pcb[0].getTest();
 	vector<Process> abc = val[0];
-	static vector<PCB> waiting;
+	vector<Process> Fork;
 	vector<Process> temp1;
+	static vector<PCB> waiting;
 	Process hold;
 	int key = pcb[pcb.size() -1].getPid();
 	int newForkID = 0;
 
-	//count memory for the processes, we only want to add the memory that is being used once
+	/*count memory for the processes, we only want to add the memory that is being used once
 	//if the memory of the process we just received is greater than the memory we have available
 	//then the process needs to stay in the "New" or "Waiting" queue
 	//if the processID is in it, then it will be sent to the "Waiting" Queue
-	//otherwise the process stays in the "New" state
+	otherwise the process stays in the "New" state
+	 */
 
 	if(pcb[pcb.size() - 1].getMemoryUse() > (1024 - **memoryInUse)){
+		// The memory required for the process is greater than the memory we have...
 
 		it = find(memoried.begin(), memoried.end(), pcb[pcb.size()-1].getPid());
 
 		if(it != memoried.end()){
+			//the process has already been run once, so we want it to be "Waiting"
 
 			sort(pcb.begin(), pcb.end() - 1, &comparator);
-			//if the type equals fork, we want to create a child process
+			//if the type equals FORK, we want to create a child process
 			if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
-				vector<Process> Fork;
-				cout << abc.size() << endl;
+
 				for(unsigned int l = 1; l < abc.size(); l++){
+					//create the child process
 					Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
 					process.setMemoryNeeded(abc[l].getMemoryNeeded());
 					process.setActualCycle(abc[l].getActualCycle());
 					process.setCurrentCycle(abc[l].getCurrentCycle());
 					Fork.push_back(process);
 				}
+				//newForkID holds all IDS of the processes that have been forked, the most recent ID will be the maximum
+				//of which we will use to create the child's ID and keep track of the child's parent
 				newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
-				PCB holder(Fork,newForkID,5);
+				timer = clock () - **time;
+				PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC);
 				holder.setparentID(pcb[0].getPid());
 				pcb.push_back(holder);
 			}
@@ -122,23 +130,25 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 			return pcb;
 		}
 		else{
-			//status stays as new
+			//the process has not been run, the status will stay as new and it will not enter the scheduler
 			pcb[pcb.size()-1].setStatus("New");
 			sort(pcb.begin(), pcb.end() - 1, &comparator);
 
 			//if the type equals fork, we want to create a child process
 			if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
-				vector<Process> Fork;
-				cout << abc.size() << endl;
 				for(unsigned int l = 1; l < abc.size(); l++){
+					//create the child process
 					Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
 					process.setMemoryNeeded(abc[l].getMemoryNeeded());
 					process.setActualCycle(abc[l].getActualCycle());
 					process.setCurrentCycle(abc[l].getCurrentCycle());
 					Fork.push_back(process);
 				}
+				//newForkID holds all IDS of the processes that have been forked, the most recent ID will be the maximum
+				//of which we will use to create the child's ID and keep track of the child's parent
 				newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
-				PCB holder(Fork,newForkID,5);
+				timer = clock () - **time;
+				PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC);
 				holder.setparentID(pcb[0].getPid());
 				pcb.push_back(holder);
 			}
@@ -176,7 +186,7 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 		}
 	}
 
-	//there are no memory issues, continue
+	//there are no memory issues, we continue as normal
 	else{
 		IDs.push_back(pcb[pcb.size() -1].getPid());
 		it = find(memoried.begin(), memoried.end(), key);
@@ -193,17 +203,19 @@ vector<PCB> scheduler(vector<PCB> pcb, int **memoryInUse){
 
 		//if the type equals fork, we want to create a child process
 		if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
-			vector<Process> Fork;
-			cout << abc.size() << endl;
 			for(unsigned int l = 1; l < abc.size(); l++){
+				//create the child process
 				Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
 				process.setMemoryNeeded(abc[l].getMemoryNeeded());
 				process.setActualCycle(abc[l].getActualCycle());
 				process.setCurrentCycle(abc[l].getCurrentCycle());
 				Fork.push_back(process);
 			}
+			//newForkID holds all IDS of the processes that have been forked, the most recent ID will be the maximum
+			//of which we will use to create the child's ID and keep track of the child's parent
 			newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
-			PCB holder(Fork,newForkID,5);
+			timer = clock () - **time;
+			PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC);
 			holder.setparentID(pcb[0].getPid());
 			pcb.push_back(holder);
 		}

@@ -16,7 +16,7 @@
 using namespace std;
 
 
-vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse); //to simulate 1 cycle
+vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time); //to simulate 1 cycle
 int randomIO(); //to create a random I/O Event (1/100 chance per cycle)
 
 
@@ -103,7 +103,7 @@ int main() {
 			time = clock () - time;
 			control.push_back(PCB(jobQueue, counter2, (float)time/CLOCKS_PER_SEC));
 			savedCount = count;
-			control = cycle(control, &memoryInUse);
+			control = cycle(control, &memoryInUse, &time);
 		}
 
 
@@ -124,7 +124,7 @@ int main() {
 				getTest = control[i].getTest();
 				print(getTest[0]);
 			}
-			control = cycle(control, &memoryInUse);
+			control = cycle(control, &memoryInUse, &time);
 		}
 
 		//input == 4, so we would like to display the help menu
@@ -147,7 +147,7 @@ int main() {
 			cout << "Simulate how many cycles?\n";
 			cin >> input;
 			for(j = 0; j < input; j++)
-				control = cycle(control, &memoryInUse);
+				control = cycle(control, &memoryInUse, &time);
 		}
 
 
@@ -182,16 +182,22 @@ int main() {
 }
 
 
-//function to perform one cycle
-// during each cycle we want there to be a random chance of an I/O event happening.
+/*function to perform one cycle
+ during each cycle we want there to be a random chance of an I/O event happening.
+ Currently, there is a 1 in 100 chance of a random I/O even occuring.
+ If a random I/0 event occurs, all processes are halted for 3 cycles.
+ */
 
-vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse){
+vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
 	vector<vector<Process>> level1 = pcb[0].getTest();
 	vector<Process> level2 = level1[0];
 	Process level3 =level2[0];
+
 	if(randomIO() > 3){
-		pcb = scheduler(pcb, &memoryInUse);
+		//no randomIO event is triggered, we continue with a cycle as normal
+		pcb = scheduler(pcb, &memoryInUse, &time);
 		if(level3.currentCycle == 0){
+			//when a process finishes, we need to free the memory
 			*memoryInUse = *memoryInUse - level2[0].getMemoryNeeded();
 			pcb[0].setMemoryNeeded(pcb[0].getMemoryNeeded() - level2[0].getMemoryNeeded());
 			level2.erase(level2.begin());
@@ -212,6 +218,7 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse){
 		}
 	}
 	else{
+		// a randomIO event has been triggered, all processes are required to wait.
 		for(unsigned int i = 0; i < pcb.size(); i++){
 			pcb[i].setStatus("Waiting");
 		}
@@ -224,7 +231,7 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse){
 int randomIO(){
 	static int count;
 	int num;
-	num = rand() % 100 + 1;
+	num = rand() % 100 + 1; //there is a 1 in 100 chance of a randomIO event occuring each cycle
 	if(num == 50){
 		cout << "Random I/O Event Triggered, Waiting " << 3 - count <<  " Cycles" << endl;
 		if(count == 3){
