@@ -18,6 +18,7 @@ using namespace std;
 
 vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time); //to simulate 1 cycle
 int randomIO(); //to create a random I/O Event (1/100 chance per cycle)
+void cascadingTermination(vector<PCB> *pcb);
 
 
 /***************************/
@@ -192,6 +193,7 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
 	vector<vector<Process>> level1 = pcb[0].getTest();
 	vector<Process> level2 = level1[0];
 	Process level3 =level2[0];
+	cascadingTermination( &pcb);
 
 	if(randomIO() > 3){
 		//no randomIO event is triggered, we continue with a cycle as normal
@@ -201,6 +203,7 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
 			*memoryInUse = *memoryInUse - level2[0].getMemoryNeeded();
 			pcb[0].setMemoryNeeded(pcb[0].getMemoryNeeded() - level2[0].getMemoryNeeded());
 			level2.erase(level2.begin());
+
 
 			if(level2.size() == 0){
 				pcb.erase(pcb.begin());
@@ -228,6 +231,7 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
 	return pcb;
 }
 
+//each cycle there needs to be a chance of a random IO event happening
 int randomIO(){
 	static int count;
 	int num;
@@ -244,5 +248,22 @@ int randomIO(){
 	}
 	count = 50;
 	return count;
+
+}
+
+//if somehow a parent finishes before a child, we need to kill all child processes
+//go over the pcb and search for children
+//once a child is found, check if the parent's PID is still in the pcb
+//if it is not, delete the child (and all other children that share that parent PID)
+void cascadingTermination(vector<PCB> *pcb){
+	for(unsigned int i = 0; i < pcb->size(); i++){
+		if(pcb->at(i).getparentID() != 0){
+			for(unsigned int j = 0; j < pcb->size(); j++){
+				if(pcb->at(i).getparentID() != pcb->at(j).getparentID()){ //we can't find the Parent's ID
+					pcb->erase(pcb->begin() + i); //erase the child
+			}
+		}
+	}
+
 
 }
