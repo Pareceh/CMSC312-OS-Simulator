@@ -8,6 +8,8 @@
 
 #ifndef SCHEDULER_H_
 #define SCHEDULER_H_
+#include <pthread.h>
+
 #include <iostream>
 #include <list>
 #include <string>
@@ -17,6 +19,7 @@
 #include <vector>
 #include <cstdlib>
 #include <unistd.h>
+
 using namespace std;
 
 #include "Process.h"
@@ -265,6 +268,7 @@ vector<Process> readyQueue(vector<PCB> *pcb, int ***memoryInUse ){
 			pcb->at(i).setStatus("Ready");
 	}
 	abc[0] = dispatcher(pcb);
+	//pthread th1(dispatcher, pcb);
 
 	return abc;
 }

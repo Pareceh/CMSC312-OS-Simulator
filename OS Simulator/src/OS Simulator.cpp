@@ -11,6 +11,7 @@
 #include <vector>
 #include <time.h>
 #include <iomanip>
+#include <thread>
 #include "Process.h"
 #include "Scheduler.h"
 using namespace std;
@@ -169,7 +170,7 @@ int main() {
 
 		cout << "Press [1] to continue. Press[0] to exit." << endl << endl;
 		cin >> input;
-		if(input > 1){
+		if(input > 1 || input == 0){
 			cout << "Invalid input, closing program..." << endl;;
 			cout << "Closing processes..." << endl;
 			control.erase(control.begin(), control.end()); //shut down all processes
@@ -259,11 +260,12 @@ void cascadingTermination(vector<PCB> *pcb){
 	for(unsigned int i = 0; i < pcb->size(); i++){
 		if(pcb->at(i).getparentID() != 0){
 			for(unsigned int j = 0; j < pcb->size(); j++){
-				if(pcb->at(i).getparentID() != pcb->at(j).getparentID()){ //we can't find the Parent's ID
+				if(pcb->at(i).getparentID() != pcb->at(j).getparentID() && j == pcb->size()){ //we can't find the Parent's ID
 					pcb->erase(pcb->begin() + i); //erase the child
+				}
 			}
 		}
+
+
 	}
-
-
 }
