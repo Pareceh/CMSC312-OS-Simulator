@@ -281,14 +281,28 @@ void dispatcher2(vector<PCB> *pcb){
 
 		//create the 4 threads to send to the CPU
 
-		if(j == 0)
-			thread t1(CPU2,pcb->at(0));
-		else if(j == 1)
-			thread t2(CPU2, pcb->at(0));
-		else if(j == 2)
-			thread t3(CPU2, pcb->at(0));
-		else if(j == 3)
-			thread t4(CPU2, pcb->at(0));
+
+		CPU2());
+		if(j == 0){
+			thread t1(CPU2,&job);
+			level3[0] = job;
+			pcb->at(j).setTest(level3);
+		}
+		else if(j == 1){
+			thread t1(CPU2,&job);
+			level3[0] = job;
+			pcb->at(j).setTest(level3);
+		}
+		else if(j == 2){
+			thread t1(CPU2,&job);
+			level3[0] = job;
+			pcb->at(j).setTest(level3);
+		}
+		else if(j == 3){
+			thread t1(CPU2,&job);
+			level3[0] = job;
+			pcb->at(j).setTest(level3);
+		}
 
 		t1.join();
 		t2.join();
