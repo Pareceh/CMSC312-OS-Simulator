@@ -36,9 +36,9 @@ public:
 
 	}
 
-	Process(string function,int min, int max, bool crit){
+	Process(string function,int minimum, int max, bool crit){
 		type = function;
-		minCycle = min;
+		minCycle = minimum;
 		maxCycle = max;
 		actualCycle = rand()%(maxCycle-minCycle +1) + minCycle;
 		currentCycle = actualCycle;

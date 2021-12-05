@@ -12,8 +12,10 @@
 #include <time.h>
 #include <iomanip>
 #include <thread>
+
 #include "Process.h"
 #include "Scheduler.h"
+//#include "Scheduler2.h"
 using namespace std;
 
 
@@ -26,6 +28,7 @@ void cascadingTermination(vector<PCB> *pcb);
 
 //main method
 int main() {
+
 	clock_t time = clock();
 	vector<Process> jobQueue, temp;
 	vector<vector<Process>> getTest;
@@ -171,7 +174,8 @@ int main() {
 		cout << "Press [1] to continue. Press[0] to exit." << endl << endl;
 		cin >> input;
 		if(input > 1 || input == 0){
-			cout << "Invalid input, closing program..." << endl;;
+			if(input > 1)
+				cout << "Invalid input, closing program..." << endl;;
 			cout << "Closing processes..." << endl;
 			control.erase(control.begin(), control.end()); //shut down all processes
 			cout << "Freeing memory..." << endl;
