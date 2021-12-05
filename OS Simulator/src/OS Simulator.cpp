@@ -14,8 +14,8 @@
 #include <thread>
 
 #include "Process.h"
-#include "Scheduler.h"
-//#include "Scheduler2.h"
+//#include "Scheduler.h"
+#include "Scheduler2.h"
 using namespace std;
 
 
@@ -202,7 +202,7 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
 
 	if(randomIO() > 3){
 		//no randomIO event is triggered, we continue with a cycle as normal
-		pcb = scheduler(pcb, &memoryInUse, &time);
+		pcb = scheduler2(pcb, &memoryInUse, &time);
 		if(level3.currentCycle == 0){
 			//when a process finishes, we need to free the memory
 			*memoryInUse = *memoryInUse - level2[0].getMemoryNeeded();
@@ -222,7 +222,7 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
 
 			level1[0] = level2;
 			pcb[0].setTest(level1);
-			CPU(level2);
+			CPU2(&level2);
 		}
 	}
 	else{
