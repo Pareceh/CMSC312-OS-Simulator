@@ -4,6 +4,7 @@
  *  Created on: Oct 18, 2021
  *      Author: Hana Parece
  *      Used to define the scheduler that schedules the processes.
+ *      This is the original scheduler for the program.
  */
 
 #ifndef SCHEDULER_H_

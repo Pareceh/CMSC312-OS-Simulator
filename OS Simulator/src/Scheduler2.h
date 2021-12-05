@@ -2,7 +2,16 @@
  * Scheduler2.h
  *
  *  Created on: Dec 5, 2021
- *      Author: mpare
+ *      Author: Hana Parece
+ *      This is the new scheduler for the program, NOT a second scheduler.
+ *      THE ORIGINAL SCHEDULER WITHOUT MULTITHREADING IS scheduler.h
+ *
+ *      Scheduler2 was created to implement multithreading.
+ *
+ *      I spent more time trying to get the mulithreading libraries to work with Eclipse IDE
+ *      than I did actually trying to implement multithreading. In fact, I never could get it to work
+ *      despite my best efforts and trying basically every fix on the internet.
+ *      In theory, I believe this method should work, but I was unable to test and run on my machine.
  */
 
 #ifndef SCHEDULER2_H_
@@ -110,16 +119,13 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			//send to ready queue
 			if(pcb[0].getStatus()!= "Waiting"){
 				pcb[0].setStatus("Ready");
-				abc = readyQueue2(&pcb, &memoryInUse);
+				readyQueue2(&pcb, &memoryInUse);
 			}
 
 			//aging so that the older processes may have an opportunity to run
 			if(pcb.size() > 2){
 				pcb[pcb.size()- 1].setPriority(pcb[pcb.size()- 1].getPriority() - 1);
 			}
-
-			val[0] = abc;
-			pcb[0].setTest(val);
 
 			return pcb;
 		}
@@ -165,16 +171,13 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			//send to ready queue
 			if(pcb[0].getStatus()!= "Waiting"){
 				pcb[0].setStatus("Ready");
-				abc = readyQueue2(&pcb, &memoryInUse);
+				readyQueue2(&pcb, &memoryInUse);
 			}
 
 			//aging so that the older processes may have an opportunity to run
 			if(pcb.size() > 2){
 				pcb[pcb.size()- 1].setPriority(pcb[pcb.size()- 1].getPriority() - 1);
 			}
-
-			val[0] = abc;
-			pcb[0].setTest(val);
 
 			return pcb;
 		}
@@ -233,16 +236,13 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 		//send to ready queue
 		if(pcb[0].getStatus()!= "Waiting"){
 			pcb[0].setStatus("Ready");
-			abc = readyQueue2(&pcb, &memoryInUse);
+			readyQueue2(&pcb, &memoryInUse);
 		}
 
 		//aging so that the older processes may have an opportunity to run
 		if(pcb.size() > 2){
 			pcb[pcb.size()- 1].setPriority(pcb[pcb.size()- 1].getPriority() - 1);
 		}
-
-		val[0] = abc;
-		pcb[0].setTest(val);
 
 		return pcb;
 	}
@@ -278,6 +278,8 @@ void dispatcher2(vector<PCB> *pcb){
 		pcb->at(j).setStatus("Running");
 		priority--;
 		pcb->at(j).setPriority(priority);
+
+		//create the 4 threads to send to the CPU
 
 		if(j == 0)
 			thread t1(CPU2,pcb->at(0));

@@ -21,7 +21,7 @@ using namespace std;
 
 vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time); //to simulate 1 cycle
 int randomIO(); //to create a random I/O Event (1/100 chance per cycle)
-void cascadingTermination(vector<PCB> *pcb);
+void cascadingTermination(vector<PCB> *pcb); //to close all child process if the parent is no longer running
 
 
 /***************************/
