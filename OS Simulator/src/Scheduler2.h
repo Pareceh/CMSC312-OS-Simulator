@@ -266,7 +266,7 @@ void  readyQueue2(vector<PCB> *pcb, int ***memoryInUse){
 
 void dispatcher2(vector<PCB> *pcb){
 
-	for(int j = 0; j < 4; j++){
+	for(unsigned int j = 0; j < 4 && j < pcb->size(); j++){
 		int priority = pcb->at(j).getPriority();
 		vector<vector<Process>> level3 = pcb->at(j).getTest();
 		vector<Process> job = level3[0];
