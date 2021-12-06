@@ -281,8 +281,6 @@ void dispatcher2(vector<PCB> *pcb){
 
 		//create the 4 threads to send to the CPU
 
-
-		CPU2());
 		if(j == 0){
 			thread t1(CPU2,&job);
 			level3[0] = job;
