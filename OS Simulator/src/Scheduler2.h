@@ -264,7 +264,7 @@ void  readyQueue2(vector<PCB> *pcb, int ***memoryInUse){
 
 void dispatcher2(vector<PCB> **pcb){
     vector<PCB> newPCB = **pcb;
-    thread t1,t2,t3,t4;
+    thread th1,th2,th3,th4;
 
 	for(unsigned int j = 0; j < 4 && j < newPCB.size(); j++){
 		int priority = newPCB[j].getPriority();
@@ -282,31 +282,31 @@ void dispatcher2(vector<PCB> **pcb){
 		//create the 4 threads to send to the CPU
 
 		if(j == 0){
-			thread t1(CPU2,&job);
+			th1 = thread (CPU2,&job);
 			level3[0] = job;
 			newPCB[j].setTest(level3);
 		}
 		else if(j == 1){
-			thread t1(CPU2,&job);
+			th2 = thread (CPU2,&job);
 			level3[0] = job;
 			newPCB[j].setTest(level3);
 		}
 		else if(j == 2){
-			thread t1(CPU2,&job);
+			th3 = thread (CPU2,&job);
 			level3[0] = job;
 			newPCB[j].setTest(level3);
 		}
 		else if(j == 3){
-			thread t1(CPU2,&job);
+			th4 = thread (CPU2,&job);
 			level3[0] = job;
 			newPCB[j].setTest(level3);
 		}
 	}
 
-        t1.join();
-		t2.join();
-		t3.join();
-		t4.join();
+        th1.join();
+		th2.join();
+		th3.join();
+		th4.join();
         **pcb = newPCB;
 
 }
