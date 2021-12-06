@@ -36,8 +36,8 @@ using namespace std;
 #include "Process.h"
 
 void CPU2(vector<Process> *job);
-void dispatcher2(vector<PCB> **pcb);
-void readyQueue2(vector<PCB> *pcb, int ***memoryInUse);
+vector<PCB> dispatcher2(vector<PCB> **pcb);
+vector<PCB> readyQueue2(vector<PCB> *pcb, int ***memoryInUse);
 
 
 
@@ -119,7 +119,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			//send to ready queue
 			if(pcb[0].getStatus()!= "Waiting"){
 				pcb[0].setStatus("Ready");
-				readyQueue2(&pcb, &memoryInUse);
+				pcb = readyQueue2(&pcb, &memoryInUse);
 			}
 
 			//aging so that the older processes may have an opportunity to run
@@ -171,7 +171,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			//send to ready queue
 			if(pcb[0].getStatus()!= "Waiting"){
 				pcb[0].setStatus("Ready");
-				readyQueue2(&pcb, &memoryInUse);
+				pcb = readyQueue2(&pcb, &memoryInUse);
 			}
 
 			//aging so that the older processes may have an opportunity to run
@@ -236,7 +236,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 		//send to ready queue
 		if(pcb[0].getStatus()!= "Waiting"){
 			pcb[0].setStatus("Ready");
-			readyQueue2(&pcb, &memoryInUse);
+			pcb = readyQueue2(&pcb, &memoryInUse);
 		}
 
 		//aging so that the older processes may have an opportunity to run
@@ -244,33 +244,55 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			pcb[pcb.size()- 1].setPriority(pcb[pcb.size()- 1].getPriority() - 1);
 		}
 
+
 		return pcb;
 	}
 }
 
-void  readyQueue2(vector<PCB> *pcb, int ***memoryInUse){
+//ready Queue
+vector<PCB> readyQueue2(vector<PCB> *pcb, int ***memoryInUse ){
 	vector<vector<Process>> level3 = pcb->at(0).getTest();
 	vector<Process> abc = level3[0];
+	vector<PCB> test;
 
 	//send from readyQueue to dispatcher
 	for(unsigned int i = 0; i < pcb->size(); i++){
 		if(pcb->at(i).getMemoryUse() <= (1024 - ***memoryInUse))
 			pcb->at(i).setStatus("Ready");
 	}
-	dispatcher2(&pcb);
+	test = dispatcher2(&pcb);
+	level3 = test[0].getTest();
+	abc = level3[0];
+
+	return test;
 }
 
 //dispatcher
 
-void dispatcher2(vector<PCB> **pcb){
+vector<PCB> dispatcher2(vector<PCB> **pcb){
     vector<PCB> newPCB = **pcb;
     thread th1,th2,th3,th4;
+	vector<Process> jobT1, jobT2, jobT3, jobT4;
+	vector<vector<Process>> level3;
+	vector<Process> job;
+	int priority;
+	int jsave;
 
 	for(unsigned int j = 0; j < 4 && j < newPCB.size(); j++){
-		int priority = newPCB[j].getPriority();
-		vector<vector<Process>> level3 = newPCB[j].getTest();
-		vector<Process> job = level3[0];
-		static vector<PCB> store;
+		priority = newPCB[j].getPriority();
+		level3 = newPCB[j].getTest();
+		job = level3[0];
+
+		//we will use these to help keep track of the threads
+		if(j == 0)
+		jobT1 = job;
+		else if(j == 1)
+		jobT2 = job;
+		else if(j ==2)
+		jobT3 = job;
+		else if(j ==3)
+		jobT4 = job;
+
 		priority = 0;
 		for(unsigned int i = 0; i < job.size(); i++)
 			priority += job[i].getActualCycle();
@@ -278,37 +300,52 @@ void dispatcher2(vector<PCB> **pcb){
 		newPCB[j].setStatus("Running");
 		priority--;
 		newPCB[j].setPriority(priority);
-
-		//create the 4 threads to send to the CPU
-
-		if(j == 0){
-			th1 = thread (CPU2,&job);
-			level3[0] = job;
-			newPCB[j].setTest(level3);
-		}
-		else if(j == 1){
-			th2 = thread (CPU2,&job);
-			level3[0] = job;
-			newPCB[j].setTest(level3);
-		}
-		else if(j == 2){
-			th3 = thread (CPU2,&job);
-			level3[0] = job;
-			newPCB[j].setTest(level3);
-		}
-		else if(j == 3){
-			th4 = thread (CPU2,&job);
-			level3[0] = job;
-			newPCB[j].setTest(level3);
-		}
+		jsave = j;
 	}
 
-        th1.join();
-		th2.join();
-		th3.join();
-		th4.join();
-        **pcb = newPCB;
+	//create the 4 threads to send to the CPU
+				if(newPCB.size() > 0){
+			if(jsave == 0){
+				th1 = thread (CPU2,&jobT1);
+			}
+			else if(jsave == 1){
+				th1 = thread (CPU2,&jobT1);
+				th2 = thread (CPU2,&jobT2);
+			}
+			else if(jsave == 2){
+				th1 = thread (CPU2,&jobT1);
+				th2 = thread (CPU2,&jobT2);
+				th3 = thread (CPU2,&jobT3);
+			}
+			else if(jsave > 3){
+				th1 = thread (CPU2,&jobT1);
+				th2 = thread (CPU2,&jobT2);
+				th3 = thread (CPU2,&jobT3);
+				th4 = thread (CPU2,&jobT4);
+			}
+	}
 
+			th1.join();
+			level3[0] = jobT1;
+			newPCB[0].setTest(level3);
+
+		if(newPCB.size() > 1){
+			th2.join();
+			level3[0] = jobT2;
+			newPCB[1].setTest(level3);
+
+			if(newPCB.size() > 2){
+				th3.join();
+				level3[0] = jobT3;
+				newPCB[2].setTest(level3);
+			}
+				if(newPCB.size() > 3){
+					th4.join();
+					level3[0] = jobT4;
+					newPCB[3].setTest(level3);
+				}
+		}
+        return newPCB;
 }
 
 /* hold the currently running process
@@ -333,11 +370,12 @@ void CPU2(vector<Process> *job){
 	}
 
 	runningCPU[0].setCurrentCycle(runningCPU[0].getCurrentCycle() -1);
+	job->at(0).setCurrentCycle(job->at(0).getCurrentCycle() -1);
 	if(runningCPU[0].getCurrentCycle() <= 0){
 		runningCPU.clear();
 	}
 
-	job->at(0) = runningCPU[0];
+
 }
 
 

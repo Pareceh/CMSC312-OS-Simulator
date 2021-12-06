@@ -296,6 +296,9 @@ Process dispatcher(vector<PCB> *pcb){
  * CPU should always have a process
  */
 Process CPU(vector<Process> job){
+
+
+
 	static vector<Process> runningCPU; //holds a single, running process
 
 	vector<Process> temp; //temporary vector
