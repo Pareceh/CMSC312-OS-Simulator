@@ -248,7 +248,6 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 	}
 }
 
-
 void  readyQueue2(vector<PCB> *pcb, int ***memoryInUse){
 	vector<vector<Process>> level3 = pcb->at(0).getTest();
 	vector<Process> abc = level3[0];
@@ -261,52 +260,55 @@ void  readyQueue2(vector<PCB> *pcb, int ***memoryInUse){
 	dispatcher2(&pcb);
 }
 
-
 //dispatcher
 
-void dispatcher2(vector<PCB> *pcb){
+void dispatcher2(vector<PCB> **pcb){
+    vector<PCB> newPCB = **pcb;
+    thread t1,t2,t3,t4;
 
-	for(unsigned int j = 0; j < 4 && j < pcb->size(); j++){
-		int priority = pcb->at(j).getPriority();
-		vector<vector<Process>> level3 = pcb->at(j).getTest();
+	for(unsigned int j = 0; j < 4 && j < newPCB.size(); j++){
+		int priority = newPCB[j].getPriority();
+		vector<vector<Process>> level3 = newPCB[j].getTest();
 		vector<Process> job = level3[0];
 		static vector<PCB> store;
 		priority = 0;
 		for(unsigned int i = 0; i < job.size(); i++)
 			priority += job[i].getActualCycle();
-		pcb->at(j).setPriority(priority);
-		pcb->at(j).setStatus("Running");
+		newPCB[j].setPriority(priority);
+		newPCB[j].setStatus("Running");
 		priority--;
-		pcb->at(j).setPriority(priority);
+		newPCB[j].setPriority(priority);
 
 		//create the 4 threads to send to the CPU
 
 		if(j == 0){
 			thread t1(CPU2,&job);
 			level3[0] = job;
-			pcb->at(j).setTest(level3);
+			newPCB[j].setTest(level3);
 		}
 		else if(j == 1){
 			thread t1(CPU2,&job);
 			level3[0] = job;
-			pcb->at(j).setTest(level3);
+			newPCB[j].setTest(level3);
 		}
 		else if(j == 2){
 			thread t1(CPU2,&job);
 			level3[0] = job;
-			pcb->at(j).setTest(level3);
+			newPCB[j].setTest(level3);
 		}
 		else if(j == 3){
 			thread t1(CPU2,&job);
 			level3[0] = job;
-			pcb->at(j).setTest(level3);
+			newPCB[j].setTest(level3);
 		}
+	}
 
-		t1.join();
+        t1.join();
 		t2.join();
 		t3.join();
 		t4.join();
-	}
+        **pcb = newPCB;
+
 }
 
 /* hold the currently running process
