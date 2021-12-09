@@ -203,15 +203,18 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
 	if(randomIO() > 3){
 		//no randomIO event is triggered, we continue with a cycle as normal
 		pcb = scheduler2(pcb, &memoryInUse, &time);
-		if(level3.currentCycle == 0){
+		for(unsigned int j =0; j < pcb.size() && j < 5; j++){
+			level1 = pcb[j].getTest();
+			level2 = level1[0];
+			level3 =level2[0];
+		if(level3.currentCycle <= 0){
 			//when a process finishes, we need to free the memory
 			*memoryInUse = *memoryInUse - level2[0].getMemoryNeeded();
-			pcb[0].setMemoryNeeded(pcb[0].getMemoryNeeded() - level2[0].getMemoryNeeded());
+			pcb[j].setMemoryNeeded(pcb[j].getMemoryNeeded() - level2[0].getMemoryNeeded());
 			level2.erase(level2.begin());
 
-
 			if(level2.size() == 0){
-				pcb.erase(pcb.begin());
+				pcb.erase(pcb.begin() + j);
 				level1 = pcb[0].getTest();
 				level2 = level1[0];
 				level3 = level2[0];
@@ -219,11 +222,11 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
 					cerr << "No Processes Running";
 				}
 			}
-
 			level1[0] = level2;
-			pcb[0].setTest(level1);
+			pcb[j].setTest(level1);
 			CPU2(&level2);
 		}
+	}
 	}
 	else{
 		// a randomIO event has been triggered, all processes are required to wait.

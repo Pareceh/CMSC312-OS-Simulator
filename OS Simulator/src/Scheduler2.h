@@ -83,6 +83,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			//if the type equals FORK, we want to create a child process
 			if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
 
+				if(abc.size() > 1){ //if there is no other process after the fork, we don't have anything TO fork.
 				for(unsigned int l = 1; l < abc.size(); l++){
 					//create the child process
 					Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
@@ -91,6 +92,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 					process.setCurrentCycle(abc[l].getCurrentCycle());
 					Fork.push_back(process);
 				}
+
 				//newForkID holds all IDS of the processes that have been forked, the most recent ID will be the maximum
 				//of which we will use to create the child's ID and keep track of the child's parent
 				newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
@@ -99,6 +101,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 				holder.setparentID(pcb[0].getPid());
 				pcb.push_back(holder);
 			}
+		}
 
 			//send to waiting
 			if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
@@ -134,6 +137,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			pcb[pcb.size()-1].setStatus("New");
 			sort(pcb.begin(), pcb.end() - 1, &comparator);
 
+			if(abc.size() > 1){ //if there is no other process after the fork, we don't have anything TO fork.
 			//if the type equals fork, we want to create a child process
 			if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
 				for(unsigned int l = 1; l < abc.size(); l++){
@@ -151,6 +155,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 				PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC);
 				holder.setparentID(pcb[0].getPid());
 				pcb.push_back(holder);
+			}
 			}
 
 			//here is the waiting queue
@@ -198,6 +203,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 
 		sort(pcb.begin(), pcb.end(), &comparator);
 
+	if(abc.size() > 1){ //if there is no other process after the fork, we don't have anything TO fork.
 		//if the type equals fork, we want to create a child process
 		if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
 			for(unsigned int l = 1; l < abc.size(); l++){
@@ -216,6 +222,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			holder.setparentID(pcb[0].getPid());
 			pcb.push_back(holder);
 		}
+	}
 
 
 		//here is the waiting queue
@@ -375,7 +382,7 @@ void CPU2(vector<Process> *job){
 		runningCPU.clear();
 	}
 
-
+	//job->at(0) = runningCPU[0];
 }
 
 
