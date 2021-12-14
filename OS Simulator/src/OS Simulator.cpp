@@ -14,14 +14,17 @@
 #include <thread>
 
 #include "Process.h"
-//#include "Scheduler.h"
-#include "Scheduler2.h"
+#include "Scheduler1.h" // Priority Scheduler
+#include "Scheduler2.h" //
 using namespace std;
+using namespace std::chrono;
 
 
-vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time); //to simulate 1 cycle
+vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time, int schedulerVersion, int *resource); //to simulate 1 cycle
 int randomIO(); //to create a random I/O Event (1/100 chance per cycle)
 void cascadingTermination(vector<PCB> *pcb); //to close all child process if the parent is no longer running
+void messageComms1(vector<PCB> *pcb); //first interprocess communcation method
+bool BankersAlgo(vector<PCB> pcb); //Deadlock Avoidance
 
 
 /***************************/
@@ -33,7 +36,7 @@ int main() {
 	vector<Process> jobQueue, temp;
 	vector<vector<Process>> getTest;
 	vector<PCB> control;
-	int input, saveMin, saveMax;
+	int input, saveMin, saveMax, input2;
 	unsigned int i;
 	int savedCount = 0;
 	int j;
@@ -44,9 +47,12 @@ int main() {
 	ifstream in;
 	const unsigned int TOTAL_MEMORY = 1024;
 	int memoryInUse = 0;
+	int resources = 50; //each process may want to request a resource, we have 50 available
 
 	cout << "Welcome to OS Simulator\n_______________________\n\nPress [1] to continue. Press [0] to exit." << endl;
 	cin >> input;
+	cout << "Which scheduler would you like to use for this run? \n[1] for Priority [2] for Shortest Time Remaining" << endl;
+	cin >> input2;
 	while(input == 1){
 		cout << "Memory in Use: " << memoryInUse << endl;
 		cout << "Memory Available: " << TOTAL_MEMORY - memoryInUse << endl;
@@ -106,9 +112,9 @@ int main() {
 			jobQueue[rand() % jobQueue.size()].setIsCritical(true);
 			counter2++;
 			time = clock () - time;
-			control.push_back(PCB(jobQueue, counter2, (float)time/CLOCKS_PER_SEC));
+			control.push_back(PCB(jobQueue, counter2, (float)time/CLOCKS_PER_SEC, input2));
 			savedCount = count;
-			control = cycle(control, &memoryInUse, &time);
+			control = cycle(control, &memoryInUse, &time, input2, &resources);
 		}
 
 
@@ -129,7 +135,7 @@ int main() {
 				getTest = control[i].getTest();
 				print(getTest[0]);
 			}
-			control = cycle(control, &memoryInUse, &time);
+			control = cycle(control, &memoryInUse, &time, input2, &resources);
 		}
 
 		//input == 4, so we would like to display the help menu
@@ -152,7 +158,7 @@ int main() {
 			cout << "Simulate how many cycles?\n";
 			cin >> input;
 			for(j = 0; j < input; j++)
-				control = cycle(control, &memoryInUse, &time);
+				control = cycle(control, &memoryInUse, &time, input2, &resources);
 		}
 
 
@@ -194,21 +200,83 @@ int main() {
  If a random I/0 event occurs, all processes are halted for 3 cycles.
  */
 
-vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
+vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time, int schedulerVersion, int *resource){
+	vector<PCB> hold = pcb;
+	int *holdmem = memoryInUse;
+	clock_t *timer = time;
+
 	vector<vector<Process>> level1 = pcb[0].getTest();
 	vector<Process> level2 = level1[0];
 	Process level3 =level2[0];
-	cascadingTermination( &pcb);
+
+
+	if(BankersAlgo(pcb)){ //we don't want to do ANYTHING if there are not enough resources.
+	cascadingTermination(&pcb);
 
 	if(randomIO() > 3){
 		//no randomIO event is triggered, we continue with a cycle as normal
-		pcb = scheduler2(pcb, &memoryInUse, &time);
+
+		//we are using the Shortest Time Remaining First Scheduler
+		if(schedulerVersion == 2){
+
+			//send a copy of the values to run the other scheduler for comparison
+			auto start = high_resolution_clock::now();
+
+			hold = scheduler1(hold, &holdmem, &timer);
+
+			auto stop = high_resolution_clock::now();
+			auto duration = duration_cast<microseconds>(stop - start);
+
+    		cout << "Time taken by Priority Scheduler: "
+         << duration.count() << " microseconds" << endl;
+
+
+			//actually run the scheduler we want
+			start = high_resolution_clock::now();
+
+			pcb = scheduler2(pcb, &memoryInUse, &time);
+
+			stop = high_resolution_clock::now();
+			duration = duration_cast<microseconds>(stop - start);
+
+    		cout << "Time taken by THIS (Shortest Time Remaining) Scheduler: "
+         << duration.count() << " microseconds" << endl;
+		}
+
+		//we aer using the Priority Scheduler
+
+		else if(schedulerVersion == 1){
+
+			//send a copy of the values to run the other scheduler for comparison
+			auto start = high_resolution_clock::now();
+
+			hold = scheduler2(hold, &holdmem, &timer);
+
+			auto stop = high_resolution_clock::now();
+			auto duration = duration_cast<microseconds>(stop - start);
+
+    		cout << "Time taken by Shortest Time Remaining Scheduler: " << duration.count() << " microseconds" << endl;
+
+			//actually run the scheduler we want
+			start = high_resolution_clock::now();
+
+			pcb = scheduler1(pcb, &memoryInUse, &time);
+
+			stop = high_resolution_clock::now();
+			duration = duration_cast<microseconds>(stop - start);
+
+    		cout << "Time taken by THIS (Priority) Scheduler: " << duration.count() << " microseconds" << endl;
+		}
+
+		messageComms1(&pcb);
+
 		for(unsigned int j =0; j < pcb.size() && j < 5; j++){
 			level1 = pcb[j].getTest();
 			level2 = level1[0];
 			level3 =level2[0];
 		if(level3.currentCycle <= 0){
-			//when a process finishes, we need to free the memory
+			//when a process finishes, we need to free the memory and release resources
+			*resource = *resource + level2[0].getResource();
 			*memoryInUse = *memoryInUse - level2[0].getMemoryNeeded();
 			pcb[j].setMemoryNeeded(pcb[j].getMemoryNeeded() - level2[0].getMemoryNeeded());
 			level2.erase(level2.begin());
@@ -224,7 +292,12 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
 			}
 			level1[0] = level2;
 			pcb[j].setTest(level1);
-			CPU2(&level2);
+			if(schedulerVersion == 2){
+				CPU2(&level2);
+			}
+			else if(schedulerVersion == 1){
+				CPU1(&level2);
+			}
 		}
 	}
 	}
@@ -235,7 +308,30 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time){
 		}
 	}
 
+	//1 in 30 chance of releasing a resource each cycle.
+	if(rand()% 30 == 5){
+		level1 = pcb[0].getTest();
+		level2 = level1[0];
+		level2[0].setResource(level2[0].getResource() - 1);
+		level1[0] = level2;
+		pcb[0].setTest(level1);
+		*resource--;
 
+	}
+
+	return pcb;
+	}
+
+	//1 in 30 chance of releasing a resource each cycle.
+	if(rand()% 30 == 5){
+		level1 = pcb[0].getTest();
+		level2 = level1[0];
+		level2[0].setResource(level2[0].getResource() - 1);
+		level1[0] = level2;
+		pcb[0].setTest(level1);
+		*resource--;
+
+	}
 	return pcb;
 }
 
@@ -263,6 +359,7 @@ int randomIO(){
 //go over the pcb and search for children
 //once a child is found, check if the parent's PID is still in the pcb
 //if it is not, delete the child (and all other children that share that parent PID)
+//This process should work for a child who has a child and so on.
 void cascadingTermination(vector<PCB> *pcb){
 	for(unsigned int i = 0; i < pcb->size(); i++){
 		if(pcb->at(i).getparentID() != 0){
@@ -276,3 +373,54 @@ void cascadingTermination(vector<PCB> *pcb){
 
 	}
 }
+
+
+//basically stores a message from a process into the inbox
+//and then the first process of the PCB will pick up that message
+//the inbox is probably only going to have 1 message in it at a time, until FORKS start happening
+void messageComms1(vector<PCB> *pcb){
+	static vector<string> inbox;
+	string message;
+	for(unsigned int i = 0; i < pcb->size(); i++){
+		if(pcb->at(i).getMessage() == "This is a message! :D"){
+			message = " This is a message from Process " + to_string(pcb->at(i).getPid());
+			pcb->at(i).setMessage(message);
+			inbox.push_back(pcb->at(i).getMessage());
+		}
+
+	}
+	//the first process will pick up the first message in the inbox
+	if(inbox.size() > 1){
+		pcb->at(0).setMessage(inbox[0]);
+		inbox.erase(inbox.begin());
+	}
+}
+
+//we want to avoid deadlock, so if there are not resources available then we need
+bool BankersAlgo(vector<PCB> pcb){
+	vector<vector<Process>> level1 = pcb[0].getTest();
+	vector<Process> level2 = level1[0];
+	Process level3 =level2[0];
+	int resourceNeed;
+
+	for (unsigned int i =0; i < pcb.size(); i++){
+		level1 = pcb[i].getTest();
+		level2 = level1[0];
+		for(unsigned int j = 0; j <pcb.size(); j++){
+				level3 = level2[j];
+				resourceNeed += level3.getResource(); //calculate the resource need
+		}
+
+		//check if the resource need is less than what we have available
+		if(resourceNeed > 50){
+			return false;
+		}
+
+
+		return true;
+
+	}
+
+	return false;
+}
+

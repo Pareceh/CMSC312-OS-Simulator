@@ -20,7 +20,7 @@ using namespace std;
 
 class Process{
 public:
-	int minCycle, maxCycle, actualCycle, currentCycle, memoryNeeded;
+	int minCycle, maxCycle, actualCycle, currentCycle, memoryNeeded, resourceNeed;
 	bool isCritical;
 	string type;
 
@@ -33,6 +33,7 @@ public:
 		currentCycle = actualCycle;
 		isCritical = false;
 		memoryNeeded = 5;
+		resourceNeed = 0;
 
 	}
 
@@ -44,10 +45,18 @@ public:
 		currentCycle = actualCycle;
 		isCritical = crit;
 		memoryNeeded = rand()% 20 + 1;
+		resourceNeed = rand()% 5;
 
 
 	}
 
+int getResource() const {
+		return resourceNeed;
+	}
+
+	void setResource(int resourceNeed) {
+		this->resourceNeed = resourceNeed;
+	}
 
 	int getActualCycle() const {
 		return actualCycle;
@@ -120,22 +129,40 @@ public:
 	vector<vector<Process>> test;
 	float arrivalTime;
 	int memoryUse = 0;
+	string message;
 
-	PCB(vector<Process> processes, int id, float time){
+	PCB(vector<Process> processes, int id, float time, int scheduler){
 		pid = id++;
 		parentID = 0; //parentID is 0 if the process is NOT a child
 		test.push_back(processes);
 		status = "New";
 		arrivalTime = time;
+		message = "This is a message! :D";
 
 		//in this case, the higher the priority the LATER it will be executed
-		for(i = 0; i < processes.size(); i++){
-			priority += processes[i].getActualCycle();
-			memoryUse += processes[i].getMemoryNeeded();
+		if(scheduler == 2){
+			for(i = 0; i < processes.size(); i++){
+				priority += processes[i].getActualCycle();
+				memoryUse += processes[i].getMemoryNeeded();
+			}
+		}
+		else if(scheduler == 1){
+			for(i = 0; i < processes.size(); i++){
+				memoryUse += processes[i].getMemoryNeeded();
+			}
+			priority = 0;
 		}
 	}
 
 	//getters and setters for PCB class
+
+		string getMessage() const{
+		return message;
+	}
+
+	void setMessage(string message){
+		this->message = message;
+	}
 
 	int getparentID() const{
 		return parentID;

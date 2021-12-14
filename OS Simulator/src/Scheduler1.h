@@ -3,13 +3,13 @@
  *
  *  Created on: Dec 5, 2021
  *      Author: Hana Parece
- *     This is the secondary scheduler for the program: Shortest Time Remaining
+ *    This is a secondary scheduler for the program.
+ *      This scheduler is a priority scheduler, where the priorites are randomly defined as opposed
+ *      to the other scheduler, which is a shortest job first scheduler.
  */
 
-#ifndef SCHEDULER2_H_
-#define SCHEDULER2_H_
-
-#include <pthread.h>
+#ifndef SCHEDULER1_H_
+#define SCHEDULER1_H_
 
 #include <iostream>
 #include <list>
@@ -27,23 +27,25 @@ using namespace std;
 
 #include "Process.h"
 
-void CPU2(vector<Process> *job);
-vector<PCB> dispatcher2(vector<PCB> **pcb);
-vector<PCB> readyQueue2(vector<PCB> *pcb, int ***memoryInUse);
+void CPU1(vector<Process> *job);
+vector<PCB> dispatcher1(vector<PCB> **pcb);
+vector<PCB> readyQueue1(vector<PCB> *pcb, int ***memoryInUse);
 
 
 
-bool comparator2(const PCB& lhs, const PCB& rhs) {
+bool comparator1(const PCB& lhs, const PCB& rhs) {
 	return lhs.getPriority() < rhs.getPriority();
 }
 
-bool sorter2(const PCB& lhs, const PCB& rhs) {
+bool sorter1(const PCB& lhs, const PCB& rhs) {
 	return lhs.getStatus() < rhs.getStatus();
 }
 
-vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
+vector<PCB> scheduler1(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 	clock_t timer;
 	static int count = 0;
+    int calculateCount = 0;
+    static int arbiCount = 0;
 	static vector<int> memoried;
 	static vector<int>::iterator it;
 	static vector<int> IDs;
@@ -55,6 +57,20 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 	Process hold;
 	int key = pcb[pcb.size() -1].getPid();
 	int newForkID = 0;
+
+    //here we assign priorities to all the processes, priority is defined by the number of calculate functions + a counter
+    for(unsigned int m =0; m < pcb.size(); m++){
+        if(pcb[m].getPriority() == 0){
+        for(unsigned int n = 0; n < abc.size(); n++){
+            if(abc[m].getType() == "CALCULATE"){
+                calculateCount++;
+            }
+        }
+        arbiCount++;
+        pcb[m].setPriority(calculateCount + arbiCount);
+        calculateCount = 0;
+        }
+    }
 
 	/*count memory for the processes, we only want to add the memory that is being used once
 	//if the memory of the process we just received is greater than the memory we have available
@@ -71,7 +87,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 		if(it != memoried.end()){
 			//the process has already been run once, so we want it to be "Waiting"
 
-			sort(pcb.begin(), pcb.end() - 1, &comparator2);
+			sort(pcb.begin(), pcb.end() - 1, &comparator1);
 			//if the type equals FORK, we want to create a child process
 			if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
 
@@ -89,7 +105,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 				//of which we will use to create the child's ID and keep track of the child's parent
 				newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
 				timer = clock () - **time;
-				PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC, 2);
+				PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC,1);
 				holder.setparentID(pcb[0].getPid());
 				pcb.push_back(holder);
 			}
@@ -114,7 +130,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			//send to ready queue
 			if(pcb[0].getStatus()!= "Waiting"){
 				pcb[0].setStatus("Ready");
-				pcb = readyQueue2(&pcb, &memoryInUse);
+				pcb = readyQueue1(&pcb, &memoryInUse);
 			}
 
 			//aging so that the older processes may have an opportunity to run
@@ -127,7 +143,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 		else{
 			//the process has not been run, the status will stay as new and it will not enter the scheduler
 			pcb[pcb.size()-1].setStatus("New");
-			sort(pcb.begin(), pcb.end() - 1, &comparator2);
+			sort(pcb.begin(), pcb.end() - 1, &comparator1);
 
 			if(abc.size() > 1){ //if there is no other process after the fork, we don't have anything TO fork.
 			//if the type equals fork, we want to create a child process
@@ -144,7 +160,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 				//of which we will use to create the child's ID and keep track of the child's parent
 				newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
 				timer = clock () - **time;
-				PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC, 2);
+				PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC,1);
 				holder.setparentID(pcb[0].getPid());
 				pcb.push_back(holder);
 			}
@@ -168,7 +184,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			//send to ready queue
 			if(pcb[0].getStatus()!= "Waiting"){
 				pcb[0].setStatus("Ready");
-				pcb = readyQueue2(&pcb, &memoryInUse);
+				pcb = readyQueue1(&pcb, &memoryInUse);
 			}
 
 			//aging so that the older processes may have an opportunity to run
@@ -193,7 +209,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 
 		}
 
-		sort(pcb.begin(), pcb.end(), &comparator2);
+		sort(pcb.begin(), pcb.end(), &comparator1);
 
 	if(abc.size() > 1){ //if there is no other process after the fork, we don't have anything TO fork.
 		//if the type equals fork, we want to create a child process
@@ -210,7 +226,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			//of which we will use to create the child's ID and keep track of the child's parent
 			newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
 			timer = clock () - **time;
-			PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC,2);
+			PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC,1);
 			holder.setparentID(pcb[0].getPid());
 			pcb.push_back(holder);
 		}
@@ -235,7 +251,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 		//send to ready queue
 		if(pcb[0].getStatus()!= "Waiting"){
 			pcb[0].setStatus("Ready");
-			pcb = readyQueue2(&pcb, &memoryInUse);
+			pcb = readyQueue1(&pcb, &memoryInUse);
 		}
 
 		//aging so that the older processes may have an opportunity to run
@@ -249,7 +265,7 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 }
 
 //ready Queue
-vector<PCB> readyQueue2(vector<PCB> *pcb, int ***memoryInUse ){
+vector<PCB> readyQueue1(vector<PCB> *pcb, int ***memoryInUse ){
 	vector<vector<Process>> level3 = pcb->at(0).getTest();
 	vector<Process> abc = level3[0];
 	vector<PCB> test;
@@ -259,7 +275,7 @@ vector<PCB> readyQueue2(vector<PCB> *pcb, int ***memoryInUse ){
 		if(pcb->at(i).getMemoryUse() <= (1024 - ***memoryInUse))
 			pcb->at(i).setStatus("Ready");
 	}
-	test = dispatcher2(&pcb);
+	test = dispatcher1(&pcb);
 	level3 = test[0].getTest();
 	abc = level3[0];
 
@@ -268,7 +284,7 @@ vector<PCB> readyQueue2(vector<PCB> *pcb, int ***memoryInUse ){
 
 //dispatcher
 
-vector<PCB> dispatcher2(vector<PCB> **pcb){
+vector<PCB> dispatcher1(vector<PCB> **pcb){
     vector<PCB> newPCB = **pcb;
     thread th1,th2,th3,th4;
 	vector<Process> jobT1, jobT2, jobT3, jobT4;
@@ -292,35 +308,29 @@ vector<PCB> dispatcher2(vector<PCB> **pcb){
 		else if(j ==3)
 		jobT4 = job;
 
-		priority = 0;
-		for(unsigned int i = 0; i < job.size(); i++)
-			priority += job[i].getActualCycle();
-		newPCB[j].setPriority(priority);
 		newPCB[j].setStatus("Running");
-		priority--;
-		newPCB[j].setPriority(priority);
 		jsave = j;
 	}
 
 	//create the 4 threads to send to the CPU
 				if(newPCB.size() > 0){
 			if(jsave == 0){
-				th1 = thread (CPU2,&jobT1);
+				th1 = thread (CPU1,&jobT1);
 			}
 			else if(jsave == 1){
-				th1 = thread (CPU2,&jobT1);
-				th2 = thread (CPU2,&jobT2);
+				th1 = thread (CPU1,&jobT1);
+				th2 = thread (CPU1,&jobT2);
 			}
 			else if(jsave == 2){
-				th1 = thread (CPU2,&jobT1);
-				th2 = thread (CPU2,&jobT2);
-				th3 = thread (CPU2,&jobT3);
+				th1 = thread (CPU1,&jobT1);
+				th2 = thread (CPU1,&jobT2);
+				th3 = thread (CPU1,&jobT3);
 			}
 			else if(jsave > 3){
-				th1 = thread (CPU2,&jobT1);
-				th2 = thread (CPU2,&jobT2);
-				th3 = thread (CPU2,&jobT3);
-				th4 = thread (CPU2,&jobT4);
+				th1 = thread (CPU1,&jobT1);
+				th2 = thread (CPU1,&jobT2);
+				th3 = thread (CPU1,&jobT3);
+				th4 = thread (CPU1,&jobT4);
 			}
 	}
 
@@ -353,7 +363,7 @@ vector<PCB> dispatcher2(vector<PCB> **pcb){
  */
 
 
-void CPU2(vector<Process> *job){
+void CPU1(vector<Process> *job){
 	static vector<Process> runningCPU; //holds a single, running process
 
 	vector<Process> temp; //temporary vector
