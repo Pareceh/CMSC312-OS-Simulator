@@ -76,24 +76,24 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
 
 				if(abc.size() > 1){ //if there is no other process after the fork, we don't have anything TO fork.
-				for(unsigned int l = 1; l < abc.size(); l++){
-					//create the child process
-					Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
-					process.setMemoryNeeded(abc[l].getMemoryNeeded());
-					process.setActualCycle(abc[l].getActualCycle());
-					process.setCurrentCycle(abc[l].getCurrentCycle());
-					Fork.push_back(process);
-				}
+					for(unsigned int l = 1; l < abc.size(); l++){
+						//create the child process
+						Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
+						process.setMemoryNeeded(abc[l].getMemoryNeeded());
+						process.setActualCycle(abc[l].getActualCycle());
+						process.setCurrentCycle(abc[l].getCurrentCycle());
+						Fork.push_back(process);
+					}
 
-				//newForkID holds all IDS of the processes that have been forked, the most recent ID will be the maximum
-				//of which we will use to create the child's ID and keep track of the child's parent
-				newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
-				timer = clock () - **time;
-				PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC, 2);
-				holder.setparentID(pcb[0].getPid());
-				pcb.push_back(holder);
+					//newForkID holds all IDS of the processes that have been forked, the most recent ID will be the maximum
+					//of which we will use to create the child's ID and keep track of the child's parent
+					newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
+					timer = clock () - **time;
+					PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC, 2);
+					holder.setparentID(pcb[0].getPid());
+					pcb.push_back(holder);
+				}
 			}
-		}
 
 			//send to waiting
 			if(abc[0].getType() == "I/O" && (abc[0].getActualCycle() == abc[0].getCurrentCycle())){
@@ -130,24 +130,24 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 			sort(pcb.begin(), pcb.end() - 1, &comparator2);
 
 			if(abc.size() > 1){ //if there is no other process after the fork, we don't have anything TO fork.
-			//if the type equals fork, we want to create a child process
-			if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
-				for(unsigned int l = 1; l < abc.size(); l++){
-					//create the child process
-					Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
-					process.setMemoryNeeded(abc[l].getMemoryNeeded());
-					process.setActualCycle(abc[l].getActualCycle());
-					process.setCurrentCycle(abc[l].getCurrentCycle());
-					Fork.push_back(process);
+				//if the type equals fork, we want to create a child process
+				if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
+					for(unsigned int l = 1; l < abc.size(); l++){
+						//create the child process
+						Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
+						process.setMemoryNeeded(abc[l].getMemoryNeeded());
+						process.setActualCycle(abc[l].getActualCycle());
+						process.setCurrentCycle(abc[l].getCurrentCycle());
+						Fork.push_back(process);
+					}
+					//newForkID holds all IDS of the processes that have been forked, the most recent ID will be the maximum
+					//of which we will use to create the child's ID and keep track of the child's parent
+					newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
+					timer = clock () - **time;
+					PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC, 2);
+					holder.setparentID(pcb[0].getPid());
+					pcb.push_back(holder);
 				}
-				//newForkID holds all IDS of the processes that have been forked, the most recent ID will be the maximum
-				//of which we will use to create the child's ID and keep track of the child's parent
-				newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
-				timer = clock () - **time;
-				PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC, 2);
-				holder.setparentID(pcb[0].getPid());
-				pcb.push_back(holder);
-			}
 			}
 
 			//here is the waiting queue
@@ -195,26 +195,26 @@ vector<PCB> scheduler2(vector<PCB> pcb, int **memoryInUse, clock_t **time){
 
 		sort(pcb.begin(), pcb.end(), &comparator2);
 
-	if(abc.size() > 1){ //if there is no other process after the fork, we don't have anything TO fork.
-		//if the type equals fork, we want to create a child process
-		if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
-			for(unsigned int l = 1; l < abc.size(); l++){
-				//create the child process
-				Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
-				process.setMemoryNeeded(abc[l].getMemoryNeeded());
-				process.setActualCycle(abc[l].getActualCycle());
-				process.setCurrentCycle(abc[l].getCurrentCycle());
-				Fork.push_back(process);
+		if(abc.size() > 1){ //if there is no other process after the fork, we don't have anything TO fork.
+			//if the type equals fork, we want to create a child process
+			if(abc[0].getType() == "FORK" && abc[0].getActualCycle() == abc[0].getCurrentCycle()){
+				for(unsigned int l = 1; l < abc.size(); l++){
+					//create the child process
+					Process process(abc[l].getType(), abc[l].getMinCycle(), abc[l].getMaxCycle(), abc[l].isIsCritical());
+					process.setMemoryNeeded(abc[l].getMemoryNeeded());
+					process.setActualCycle(abc[l].getActualCycle());
+					process.setCurrentCycle(abc[l].getCurrentCycle());
+					Fork.push_back(process);
+				}
+				//newForkID holds all IDS of the processes that have been forked, the most recent ID will be the maximum
+				//of which we will use to create the child's ID and keep track of the child's parent
+				newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
+				timer = clock () - **time;
+				PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC,2);
+				holder.setparentID(pcb[0].getPid());
+				pcb.push_back(holder);
 			}
-			//newForkID holds all IDS of the processes that have been forked, the most recent ID will be the maximum
-			//of which we will use to create the child's ID and keep track of the child's parent
-			newForkID= *max_element(IDs.begin(), IDs.end()) + 1;
-			timer = clock () - **time;
-			PCB holder(Fork,newForkID,(float)timer/CLOCKS_PER_SEC,2);
-			holder.setparentID(pcb[0].getPid());
-			pcb.push_back(holder);
 		}
-	}
 
 
 		//here is the waiting queue
@@ -269,8 +269,8 @@ vector<PCB> readyQueue2(vector<PCB> *pcb, int ***memoryInUse ){
 //dispatcher
 
 vector<PCB> dispatcher2(vector<PCB> **pcb){
-    vector<PCB> newPCB = **pcb;
-    thread th1,th2,th3,th4;
+	vector<PCB> newPCB = **pcb;
+	thread th1,th2,th3,th4;
 	vector<Process> jobT1, jobT2, jobT3, jobT4;
 	vector<vector<Process>> level3;
 	vector<Process> job;
@@ -284,13 +284,13 @@ vector<PCB> dispatcher2(vector<PCB> **pcb){
 
 		//we will use these to help keep track of the threads
 		if(j == 0)
-		jobT1 = job;
+			jobT1 = job;
 		else if(j == 1)
-		jobT2 = job;
+			jobT2 = job;
 		else if(j ==2)
-		jobT3 = job;
+			jobT3 = job;
 		else if(j ==3)
-		jobT4 = job;
+			jobT4 = job;
 
 		priority = 0;
 		for(unsigned int i = 0; i < job.size(); i++)
@@ -303,48 +303,48 @@ vector<PCB> dispatcher2(vector<PCB> **pcb){
 	}
 
 	//create the 4 threads to send to the CPU
-				if(newPCB.size() > 0){
-			if(jsave == 0){
-				th1 = thread (CPU2,&jobT1);
-			}
-			else if(jsave == 1){
-				th1 = thread (CPU2,&jobT1);
-				th2 = thread (CPU2,&jobT2);
-			}
-			else if(jsave == 2){
-				th1 = thread (CPU2,&jobT1);
-				th2 = thread (CPU2,&jobT2);
-				th3 = thread (CPU2,&jobT3);
-			}
-			else if(jsave > 3){
-				th1 = thread (CPU2,&jobT1);
-				th2 = thread (CPU2,&jobT2);
-				th3 = thread (CPU2,&jobT3);
-				th4 = thread (CPU2,&jobT4);
-			}
+	if(newPCB.size() > 0){
+		if(jsave == 0){
+			th1 = thread (CPU2,&jobT1);
+		}
+		else if(jsave == 1){
+			th1 = thread (CPU2,&jobT1);
+			th2 = thread (CPU2,&jobT2);
+		}
+		else if(jsave == 2){
+			th1 = thread (CPU2,&jobT1);
+			th2 = thread (CPU2,&jobT2);
+			th3 = thread (CPU2,&jobT3);
+		}
+		else if(jsave > 3){
+			th1 = thread (CPU2,&jobT1);
+			th2 = thread (CPU2,&jobT2);
+			th3 = thread (CPU2,&jobT3);
+			th4 = thread (CPU2,&jobT4);
+		}
 	}
 
-			th1.join();
-			level3[0] = jobT1;
-			newPCB[0].setTest(level3);
+	th1.join();
+	level3[0] = jobT1;
+	newPCB[0].setTest(level3);
 
-		if(newPCB.size() > 1){
-			th2.join();
-			level3[0] = jobT2;
-			newPCB[1].setTest(level3);
+	if(newPCB.size() > 1){
+		th2.join();
+		level3[0] = jobT2;
+		newPCB[1].setTest(level3);
 
-			if(newPCB.size() > 2){
-				th3.join();
-				level3[0] = jobT3;
-				newPCB[2].setTest(level3);
-			}
-				if(newPCB.size() > 3){
-					th4.join();
-					level3[0] = jobT4;
-					newPCB[3].setTest(level3);
-				}
+		if(newPCB.size() > 2){
+			th3.join();
+			level3[0] = jobT3;
+			newPCB[2].setTest(level3);
 		}
-        return newPCB;
+		if(newPCB.size() > 3){
+			th4.join();
+			level3[0] = jobT4;
+			newPCB[3].setTest(level3);
+		}
+	}
+	return newPCB;
 }
 
 /* hold the currently running process

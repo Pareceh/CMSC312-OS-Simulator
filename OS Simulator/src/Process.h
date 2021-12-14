@@ -50,7 +50,7 @@ public:
 
 	}
 
-int getResource() const {
+	int getResource() const {
 		return resourceNeed;
 	}
 
@@ -108,12 +108,12 @@ int getResource() const {
 	}
 
 	int getMemoryNeeded() const {
-			return memoryNeeded;
-		}
+		return memoryNeeded;
+	}
 
 	void setMemoryNeeded(int memoryNeeded) {
-			this->memoryNeeded = memoryNeeded;
-		}
+		this->memoryNeeded = memoryNeeded;
+	}
 };
 
 
@@ -156,7 +156,7 @@ public:
 
 	//getters and setters for PCB class
 
-		string getMessage() const{
+	string getMessage() const{
 		return message;
 	}
 
@@ -173,12 +173,12 @@ public:
 	}
 
 	int getMemoryUse() const {
-			return memoryUse;
-		}
+		return memoryUse;
+	}
 
 	void setMemoryUse(unsigned int memoryUse) {
-			this->memoryUse = memoryUse;
-		}
+		this->memoryUse = memoryUse;
+	}
 
 	int getPid() const {
 		return pid;

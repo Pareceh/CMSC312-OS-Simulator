@@ -211,115 +211,115 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time, int schedule
 
 
 	if(BankersAlgo(pcb)){ //we don't want to do ANYTHING if there are not enough resources.
-	cascadingTermination(&pcb);
+		cascadingTermination(&pcb);
 
-	if(randomIO() > 3){
-		//no randomIO event is triggered, we continue with a cycle as normal
+		if(randomIO() > 3){
+			//no randomIO event is triggered, we continue with a cycle as normal
 
-		//we are using the Shortest Time Remaining First Scheduler
-		if(schedulerVersion == 2){
+			//we are using the Shortest Time Remaining First Scheduler
+			if(schedulerVersion == 2){
 
-			//send a copy of the values to run the other scheduler for comparison
-			auto start = high_resolution_clock::now();
+				//send a copy of the values to run the other scheduler for comparison
+				auto start = high_resolution_clock::now();
 
-			hold = scheduler1(hold, &holdmem, &timer);
+				hold = scheduler1(hold, &holdmem, &timer);
 
-			auto stop = high_resolution_clock::now();
-			auto duration = duration_cast<microseconds>(stop - start);
+				auto stop = high_resolution_clock::now();
+				auto duration = duration_cast<microseconds>(stop - start);
 
-    		cout << "Time taken by Priority Scheduler: "
-         << duration.count() << " microseconds" << endl;
+				cout << "Time taken by Priority Scheduler: "
+						<< duration.count() << " microseconds" << endl;
 
 
-			//actually run the scheduler we want
-			start = high_resolution_clock::now();
+				//actually run the scheduler we want
+				start = high_resolution_clock::now();
 
-			pcb = scheduler2(pcb, &memoryInUse, &time);
+				pcb = scheduler2(pcb, &memoryInUse, &time);
 
-			stop = high_resolution_clock::now();
-			duration = duration_cast<microseconds>(stop - start);
+				stop = high_resolution_clock::now();
+				duration = duration_cast<microseconds>(stop - start);
 
-    		cout << "Time taken by THIS (Shortest Time Remaining) Scheduler: "
-         << duration.count() << " microseconds" << endl;
-		}
+				cout << "Time taken by THIS (Shortest Time Remaining) Scheduler: "
+						<< duration.count() << " microseconds" << endl;
+			}
 
-		//we aer using the Priority Scheduler
+			//we aer using the Priority Scheduler
 
-		else if(schedulerVersion == 1){
+			else if(schedulerVersion == 1){
 
-			//send a copy of the values to run the other scheduler for comparison
-			auto start = high_resolution_clock::now();
+				//send a copy of the values to run the other scheduler for comparison
+				auto start = high_resolution_clock::now();
 
-			hold = scheduler2(hold, &holdmem, &timer);
+				hold = scheduler2(hold, &holdmem, &timer);
 
-			auto stop = high_resolution_clock::now();
-			auto duration = duration_cast<microseconds>(stop - start);
+				auto stop = high_resolution_clock::now();
+				auto duration = duration_cast<microseconds>(stop - start);
 
-    		cout << "Time taken by Shortest Time Remaining Scheduler: " << duration.count() << " microseconds" << endl;
+				cout << "Time taken by Shortest Time Remaining Scheduler: " << duration.count() << " microseconds" << endl;
 
-			//actually run the scheduler we want
-			start = high_resolution_clock::now();
+				//actually run the scheduler we want
+				start = high_resolution_clock::now();
 
-			pcb = scheduler1(pcb, &memoryInUse, &time);
+				pcb = scheduler1(pcb, &memoryInUse, &time);
 
-			stop = high_resolution_clock::now();
-			duration = duration_cast<microseconds>(stop - start);
+				stop = high_resolution_clock::now();
+				duration = duration_cast<microseconds>(stop - start);
 
-    		cout << "Time taken by THIS (Priority) Scheduler: " << duration.count() << " microseconds" << endl;
-		}
+				cout << "Time taken by THIS (Priority) Scheduler: " << duration.count() << " microseconds" << endl;
+			}
 
-		messageComms1(&pcb);
+			messageComms1(&pcb);
 
-		for(unsigned int j =0; j < pcb.size() && j < 5; j++){
-			level1 = pcb[j].getTest();
-			level2 = level1[0];
-			level3 =level2[0];
-		if(level3.currentCycle <= 0){
-			//when a process finishes, we need to free the memory and release resources
-			*resource = *resource + level2[0].getResource();
-			*memoryInUse = *memoryInUse - level2[0].getMemoryNeeded();
-			pcb[j].setMemoryNeeded(pcb[j].getMemoryNeeded() - level2[0].getMemoryNeeded());
-			level2.erase(level2.begin());
-
-			if(level2.size() == 0){
-				pcb.erase(pcb.begin() + j);
-				level1 = pcb[0].getTest();
+			for(unsigned int j =0; j < pcb.size() && j < 5; j++){
+				level1 = pcb[j].getTest();
 				level2 = level1[0];
-				level3 = level2[0];
-				if(pcb.size() == 0){
-					cerr << "No Processes Running";
+				level3 =level2[0];
+				if(level3.currentCycle <= 0){
+					//when a process finishes, we need to free the memory and release resources
+					*resource = *resource + level2[0].getResource();
+					*memoryInUse = *memoryInUse - level2[0].getMemoryNeeded();
+					pcb[j].setMemoryNeeded(pcb[j].getMemoryNeeded() - level2[0].getMemoryNeeded());
+					level2.erase(level2.begin());
+
+					if(level2.size() == 0){
+						pcb.erase(pcb.begin() + j);
+						level1 = pcb[0].getTest();
+						level2 = level1[0];
+						level3 = level2[0];
+						if(pcb.size() == 0){
+							cerr << "No Processes Running";
+						}
+					}
+					level1[0] = level2;
+					pcb[j].setTest(level1);
+					if(schedulerVersion == 2){
+						CPU2(&level2);
+					}
+					else if(schedulerVersion == 1){
+						CPU1(&level2);
+					}
 				}
 			}
+		}
+		else{
+			// a randomIO event has been triggered, all processes are required to wait.
+			for(unsigned int i = 0; i < pcb.size(); i++){
+				pcb[i].setStatus("Waiting");
+			}
+		}
+
+		//1 in 30 chance of releasing a resource each cycle.
+		if(rand()% 30 == 5){
+			level1 = pcb[0].getTest();
+			level2 = level1[0];
+			level2[0].setResource(level2[0].getResource() - 1);
 			level1[0] = level2;
-			pcb[j].setTest(level1);
-			if(schedulerVersion == 2){
-				CPU2(&level2);
-			}
-			else if(schedulerVersion == 1){
-				CPU1(&level2);
-			}
+			pcb[0].setTest(level1);
+			*resource--;
+
 		}
-	}
-	}
-	else{
-		// a randomIO event has been triggered, all processes are required to wait.
-		for(unsigned int i = 0; i < pcb.size(); i++){
-			pcb[i].setStatus("Waiting");
-		}
-	}
 
-	//1 in 30 chance of releasing a resource each cycle.
-	if(rand()% 30 == 5){
-		level1 = pcb[0].getTest();
-		level2 = level1[0];
-		level2[0].setResource(level2[0].getResource() - 1);
-		level1[0] = level2;
-		pcb[0].setTest(level1);
-		*resource--;
-
-	}
-
-	return pcb;
+		return pcb;
 	}
 
 	//1 in 30 chance of releasing a resource each cycle.
@@ -407,8 +407,8 @@ bool BankersAlgo(vector<PCB> pcb){
 		level1 = pcb[i].getTest();
 		level2 = level1[0];
 		for(unsigned int j = 0; j <pcb.size(); j++){
-				level3 = level2[j];
-				resourceNeed += level3.getResource(); //calculate the resource need
+			level3 = level2[j];
+			resourceNeed += level3.getResource(); //calculate the resource need
 		}
 
 		//check if the resource need is less than what we have available
