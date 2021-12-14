@@ -201,6 +201,7 @@ int main() {
  */
 
 vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time, int schedulerVersion, int *resource){
+	static string memoryMessage;
 	vector<PCB> hold = pcb;
 	int *holdmem = memoryInUse;
 	clock_t *timer = time;
@@ -210,7 +211,7 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time, int schedule
 	Process level3 =level2[0];
 
 
-	if(BankersAlgo(pcb)){ //we don't want to do ANYTHING if there are not enough resources.
+	if(BankersAlgo(pcb)){ //check if there are enough resources using banker's algorithm
 		cascadingTermination(&pcb);
 
 		if(randomIO() > 3){
@@ -319,8 +320,21 @@ vector<PCB> cycle(vector<PCB> pcb, int *memoryInUse, clock_t *time, int schedule
 
 		}
 
+
+		//inter process communication via sharing memory, each process is paired with another process to share memory
+		//and share a message with
+		if(pcb.size() > 1 && pcb.size()%2 == 0){
+			for(unsigned int p; p < pcb.size(); p = p + 2){
+				pcb[p].setMessage("We Share Memory!");
+				memoryMessage = pcb[p].getMessage();
+				pcb[p + 1].setMessage(memoryMessage);
+			}
+		}
+
 		return pcb;
 	}
+
+	//there is a problem with resource allocation, so instead we leave and wait for resources to be freed
 
 	//1 in 30 chance of releasing a resource each cycle.
 	if(rand()% 30 == 5){
@@ -396,12 +410,14 @@ void messageComms1(vector<PCB> *pcb){
 	}
 }
 
-//we want to avoid deadlock, so if there are not resources available then we need
+//we want to avoid deadlock, so we need to check that the resources are available
+//and that is is safe for us to run
 bool BankersAlgo(vector<PCB> pcb){
 	vector<vector<Process>> level1 = pcb[0].getTest();
 	vector<Process> level2 = level1[0];
 	Process level3 =level2[0];
 	int resourceNeed;
+
 
 	for (unsigned int i =0; i < pcb.size(); i++){
 		level1 = pcb[i].getTest();
